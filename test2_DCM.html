@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TEST 2 DCM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Reset and base styles */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f5f5f5 100%);
+      min-height: 100vh;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #22223b;
+      padding: 0;
+      margin: 0;
+      letter-spacing: 0.01em;
+      font-size: 1.08rem;
+      background-attachment: fixed;
+    }
+    .container {
+      max-width: 980px;
+      margin: 40px auto 40px auto;
+      background: rgba(255,255,255,0.98);
+      padding: 32px 28px 32px 28px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(30,41,59,0.13), 0 1.5px 6px rgba(30,41,59,0.06);
+      border: 1.5px solid #e0e7ff;
+      position: relative;
+      min-height: 80vh;
+    }
+    .timer {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  background: linear-gradient(90deg, #f59e0b 60%, #fbbf24 100%);
+  color: #22223b;
+  font-weight: bold;
+  text-align: center;
+  padding: 14px 0;
+  border-radius: 0 0 10px 10px; /* colțuri doar jos, ca să arate mai natural */
+  margin-bottom: 28px;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.08);
+  border: 1.5px solid #fbbf24;
+  text-shadow: 0 1px 0 #fff8;
+}
+
+    .question {
+      border: 1.5px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 22px 20px 18px 20px;
+      margin-bottom: 28px;
+      background: linear-gradient(120deg, #f3f4f6 80%, #e0e7ff 100%);
+      box-shadow: 0 2px 8px rgba(59,130,246,0.06);
+      transition: background-color .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .question:hover {
+      background: linear-gradient(120deg, #e0e7ff 80%, #f3f4f6 100%);
+      box-shadow: 0 4px 16px rgba(59,130,246,0.10);
+      border-color: #6366f1;
+    }
+    .correct-bg {
+      background: linear-gradient(90deg, #e6ffed 80%, #bbf7d0 100%) !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 2px 12px rgba(34,197,94,0.09);
+      animation: correctPulse 0.7s;
+    }
+    .incorrect-bg {
+      background: linear-gradient(90deg, #ffe6e6 80%, #fecaca 100%) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 2px 12px rgba(239,68,68,0.09);
+      animation: incorrectPulse 0.7s;
+    }
+    @keyframes correctPulse {
+      0% { box-shadow: 0 0 0 0 #22c55e44; }
+      70% { box-shadow: 0 0 0 10px #22c55e22; }
+      100% { box-shadow: 0 2px 12px rgba(34,197,94,0.09);}
+    }
+    @keyframes incorrectPulse {
+      0% { box-shadow: 0 0 0 0 #ef444444; }
+      70% { box-shadow: 0 0 0 10px #ef444422; }
+      100% { box-shadow: 0 2px 12px rgba(239,68,68,0.09);}
+    }
+    .header {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 1.18rem;
+      color: #3730a3;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    .subtext {
+      margin: 0 0 14px 0;
+      color: #374151;
+      font-size: 1.01rem;
+      font-style: italic;
+      opacity: 0.92;
+    }
+    .options {
+      margin-left: 24px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+    }
+    .options label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 1.04rem;
+      padding: 4px 0 4px 0;
+      transition: background 0.2s;
+      border-radius: 6px;
+      gap: 8px;
+    }
+    .options label:hover {
+      background: #e0e7ff;
+    }
+    .options input[type="radio"],
+    .options input[type="checkbox"] {
+      accent-color: #6366f1;
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      transition: accent-color 0.2s;
+    }
+    .statement {
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 1.07rem;
+      letter-spacing: 0.01em;
+    }
+    .pool {
+      background: linear-gradient(90deg, #eef 80%, #dbeafe 100%);
+      padding: 10px 8px 10px 8px;
+      border: 1.5px solid #818cf8;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      min-height: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    .draggable-item {
+      display: inline-block;
+      background: linear-gradient(90deg, #2563eb 80%, #60a5fa 100%);
+      color: #fff;
+      padding: 6px 14px;
+      margin: 4px 6px 4px 0;
+      border-radius: 8px;
+      cursor: grab;
+      font-weight: 500;
+      font-size: 1.01rem;
+      box-shadow: 0 2px 8px #2563eb22;
+      border: 1.5px solid #1e40af;
+      transition: background 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .draggable-item:active {
+      background: #1e40af;
+      box-shadow: 0 2px 12px #1e40af33;
+    }
+    .drop-zone {
+      min-height: 48px;
+      padding: 12px 10px;
+      margin: 10px 0 10px 0;
+      border: 2.5px dashed #cbd5e1;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-size: 1.04rem;
+      color: #334155;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .drop-zone.dragover {
+      background: #e0e7ff;
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+    }
+    select {
+      margin-left: 10px;
+      padding: 6px 16px 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 1.04rem;
+      background: #f3f4f6;
+      color: #22223b;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      min-width: 90px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+      background: #e0e7ff;
+    }
+    #submitBtn {
+      display: block;
+      margin: 32px auto 0 auto;
+      padding: 16px 36px;
+      font-size: 1.13rem;
+      color: #fff;
+      background: linear-gradient(90deg, #2563eb 80%, #6366f1 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      box-shadow: 0 2px 12px #2563eb22;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      outline: none;
+    }
+    #submitBtn:hover, #submitBtn:focus {
+      background: linear-gradient(90deg, #6366f1 80%, #2563eb 100%);
+      box-shadow: 0 4px 18px #6366f122;
+      transform: translateY(-2px) scale(1.03);
+    }
+    #resultContainer {
+      text-align: center;
+      margin-top: 32px;
+      padding: 18px 0 0 0;
+      font-size: 1.15rem;
+      color: #1e293b;
+      background: linear-gradient(90deg, #e0e7ff 80%, #f3f4f6 100%);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #818cf822;
+      min-height: 60px;
+    }
+    #resultContainer h3 {
+      color: #2563eb;
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+      font-weight: 800;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    pre {
+      text-align: left;
+      background: #f3f4f6;
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: inline-block;
+      overflow-x: auto;
+      font-size: 0.97rem;
+      color: #334155;
+      margin-top: 10px;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1.5px solid #e0e7ff;
+    }
+    .correct-code {
+      font-size: 0.98rem;
+      font-style: italic;
+      margin-top: 10px;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: inline-block;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1px solid #e0e7ff;
+    }
+    /* Responsive styles */
+    @media (max-width: 700px) {
+      .container {
+        padding: 10px 2vw 10px 2vw;
+        border-radius: 8px;
+      }
+      .question {
+        padding: 12px 6px 10px 6px;
+        border-radius: 8px;
+      }
+      .header {
+        font-size: 1.05rem;
+      }
+      #submitBtn {
+        padding: 12px 18px;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+      .pool, .drop-zone {
+        font-size: 0.98rem;
+        min-height: 36px;
+        border-radius: 6px;
+      }
+      select {
+        font-size: 0.98rem;
+        border-radius: 6px;
+      }
+    }
+    /* Custom scrollbar for pool and pre */
+    .pool, pre {
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 #e0e7ff;
+    }
+    .pool::-webkit-scrollbar, pre::-webkit-scrollbar {
+      height: 8px;
+      background: #e0e7ff;
+      border-radius: 8px;
+    }
+    .pool::-webkit-scrollbar-thumb, pre::-webkit-scrollbar-thumb {
+      background: #6366f1;
+      border-radius: 8px;
+    }
+    /* Subtle fade-in animation for questions */
+    .question {
+      opacity: 0;
+      animation: fadeInQ 0.7s forwards;
+    }
+    .question:nth-child(1) { animation-delay: 0.05s; }
+    .question:nth-child(2) { animation-delay: 0.10s; }
+    .question:nth-child(3) { animation-delay: 0.15s; }
+    .question:nth-child(4) { animation-delay: 0.20s; }
+    .question:nth-child(5) { animation-delay: 0.25s; }
+    .question:nth-child(6) { animation-delay: 0.30s; }
+    .question:nth-child(7) { animation-delay: 0.35s; }
+    .question:nth-child(8) { animation-delay: 0.40s; }
+    .question:nth-child(9) { animation-delay: 0.45s; }
+    .question:nth-child(10) { animation-delay: 0.50s; }
+    @keyframes fadeInQ {
+      to { opacity: 1; }
+    }
+    /* Miscellaneous */
+    ::selection {
+      background: #6366f1;
+      color: #fff;
+    }
+    input:focus, button:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="timer" id="timer">Submitting in 50:00</div>
+    <form id="testForm" onsubmit="return false">
+      <div id="questionsContainer"></div>
+      <button type="button" id="submitBtn">Submit</button>
+    </form>
+    <div id="resultContainer"></div>
+  </div>
+
+  <script>
+    // Block access if not logged in
+  if(sessionStorage.getItem('loggedIn') !== 'true'){
+    alert('Please login first!');
+    window.location.href = 'index.html'; // redirect to login page
+  }
+    // === YOUR ANSWER KEY (source of truth) ===
+    const answerKey = [
+     [0],[1,2,0],[0],[3],[0,2,2],[0,3],[2],[1],[0],[2],
+[2,3],[0,3],[1],[0,1,2],[1,2],[1,1,1],[1,1,0],[3],[1,0,1],[1],
+[3],[0,1],[1,0,1],[0],[1,2],[1],[0,0,2],[4,2,1,0,3],[3],[2,1,0],
+[1,0,0],[3],[1],[1,0,1],[2,0,1],[1,1,0],[3],[1],[2],[2],
+[3]
+
+
+    ];
+
+    // === DATASETS (from your original) ===
+    const type1Data = {
+      1: { prompt:["In what situation would one want to disable Windows Defender Firewall on a device?"], options:["If another firewall is installed on the same device","The firewall is blocking needed data from an app","To install an app","To run an antimalware scan"], correct:[0], multi:true },
+3: { prompt:["Which is a customization that can be made to a Windows Start menu?"], options:["Pin and Unpin tiles","Change the icon images of the Start Menu items","Save Start Menu preset","Download Start Menu templates"], correct:[0], multi:true },
+4: { prompt:["An employee is unable to make a connection to a wireless network within an office.","Others in the employee's vicinity can connect to the same wireless network.","What should a technician do first to troubleshoot the issue?"], options:["Forget any existing wireless networks on the device","Run ipconfig /reset on the device","Make sure the authentication information for the wireless network is correct","Make sure the wireless card is enabled"], correct:[3], multi:true },
+6: { prompt:["Which password characteristics are considered to be a secure password requirement for BYOD mobile device? (Choose two)"], options:["A password with lowercase letters, uppercase letters, symbols, and numbers","A four-digit PIN","A one-time token","A password with eight or more characters"], correct:[0,3], multi:true },
+7: { prompt:["You provide volunteer computer support for a non-profit organization in your community.","They recently received a donation of ten Windows computers.","The antivirus software installed on the donated computers expires the end of this month.","The organization has no budget to renew the antivirus software licenses and they are concerned about protecting these computers from spyware, rootkits, viruses, and Trojans.","They've asked for your recommendation.","What should you recommend as a no cost solution to protect their Windows computers from malware?"], options:["Download and install a 30-day trial of a good antivirus software","Don't use the computers until they can get funds to renew the antivirus software licenses","Uninstall the expiring antivirus software and enable Windows Defender","Recommend that they not connect to the Internet"], correct:[2], multi:true },
+8: { prompt:["A real estate company is considering transferring its data storage to the cloud.","What is a benefit of having files stored in the cloud as opposed to on-premises servers?"], options:["Files in the cloud are accessed faster than files on-premises servers.","The ability for files to be opened on multiple types of devices.","File and folder structure is simplified.","Security is more granular on cloud files."], correct:[1], multi:true },
+9: { prompt:["When a file or folder is moved or copied from one partition to another, what happens to the permissions of that file or folder?"], options:["The permissions inherit from the folder of the destination partition","The permissions from the source partition remain with the file or folder","The permissions from the source partition are retained with the file or folder","The users and groups assigned to the resource in the source partition are copied to the new partition."], correct:[0], multi:true },
+10: { prompt:["A help desk operator has spent an hour trying to diagnose a reason why an operations manager cannot access Dynamics 365 to perform day-to-day tasks.","What should the help desk operator do next?"], options:["Abandon the issue","Continue to try to troubleshoot the issue","Escalate the issue","Call the app vendor to get help on troubleshooting the issue"], correct:[2], multi:true },
+11: { prompt:["You are training a new technician to read and analyze results of an antimalware program scan on a network.","What are clues that the network may be under a malware attack? (Choose two)"], options:["All network activity stops during the analysis period","An increase in video packet transmissions occur during the analysis period","A flood of ping requests turn up on the activity report","A file is replicated rapidly"], correct:[2,3], multi:true },
+12: { prompt:["Which two permissions are combined to determine your effective permissions? (Choose two)"], options:["Group","Sites","Organizational Units","User Account"], correct:[0,3], multi:true },
+13: { prompt:["Which type of document is an agreement between two parties to outline terms and goals for that agreement?"], options:["MOA","MOU","AUP","SLA"], correct:[1], multi:true },
+15: { prompt:["A new administrator is learning about the benefits of using the Microsoft Store to install apps on employees' devices.","What are main benefits of using the Microsoft Store to obtain apps? (Choose two)"], options:["To purchase devices for Windows-based computers","To obtain apps that have been verified by Microsoft","To allow a user to obtain both free and paid apps","To update Windows devices"], correct:[1,2], multi:true },
+18: { prompt:["Which Microsoft tool is used to manage mobile devices on a corporate network?"], options:["Azure Resource Manager","Compliance Center","Security Center","Microsoft Intune"], correct:[3], multi:true },
+20: { prompt:["You have been asked to explain the difference between a local account and a Microsoft account.","Which of these options best describes a local account?"], options:["A local account requires a VPN.","A local account works without the Internet.","A local account is a subscription-based account.","A local account is a cloud account."], correct:[1], multi:true },
+21: { prompt:["When installing Microsoft Windows, which login account creation will allow the user to login from any device that can access the internet?"], options:["Local account","Roaming account","Backup Operator account","Microsoft account"], correct:[3], multi:true },
+22: { prompt:["A new device administrator notices that many accounts on user devices are local accounts.","The users claim the local accounts allow them to more easily manage their own files on their own devices.","Which other statements are true regarding local accounts? (Choose two)"], options:["Local accounts can access shares on other devices.","A network connection is not required to create an account.","All apps can be installed from the Microsoft Store.","Local accounts can be assigned permissions on other devices."], correct:[0,1], multi:true },
+24: { prompt:["Which of the following accessibility features in Windows reads text to an individual?"], options:["Narrator","Speech Recognition","Closed Captions","Magnifier"], correct:[0], multi:true },
+25: { prompt:["Which of the following options can Windows Update install automatically? (Choose two)"], options:["Firmware updates","Definition updates","Critical updates","App updates"], correct:[1,2], multi:true },
+26: { prompt:["On a Windows device, which account level and permission level, at a minimum, are needed to install apps on that device?"], options:["Administrator with local administrative privileges","Standard user with local administrative privileges","Administrator with domain administrative privileges","Standard user with domain administrative privileges"], correct:[1], multi:true },
+29: { prompt:["In a backup strategy that creates a Full Backup once a week, which type, when created on day 4, is quicker to restore?"], options:["Mirror","Full","Incremental","Differential"], correct:[3], multi:true },
+32: { prompt:["An administrator wants to set up specific UAC settings, such as the behavior of the elevation prompt within UAC and the ability to ensure any elevation on executables is done on executables that are signed and validated.","Where are these settings configured on a person's device?"], options:["Control Panel","Windows Security","Settings","Group Policy"], correct:[3], multi:true },
+33: { prompt:["A new technician is learning about the meaning of permissions with files and folders on network drives.","What does the Take Ownership permission give someone that is unavailable with other permissions besides Full Control?"], options:["The ability to control attributes on a resource","The ability to control permissions of a resource","The ability to write to the resource","The ability to modify a resource"], correct:[1], multi:true },
+37: { prompt:["What is the first thing to check on a laptop when troubleshooting an external power issue?"], options:["Device Manager","BIOS","Battery","Power cables"], correct:[3], multi:true },
+38: { prompt:["A consultant is trying to join a laptop to the company domain.","The employee is reporting that the option for joining a domain is not available.","What operating system does the consultant likely have?"], options:["Windows Education","Windows Home","Windows Enterprise","Windows Pro"], correct:[1], multi:true },
+39: { prompt:["A presenter is trying to use a wireless mouse from one end of a conference room to control a device on the other end of that room.","The mouse is having intermittent connectivity issues with the device.","What is the most likely cause of the issue?"], options:["Wrong driver on mouse","The mouse is turned off","Distance from the mouse to the device","Battery weakness"], correct:[2], multi:true },
+40: { prompt:["A user has connected an external monitor to a laptop and wants span the desktop across both displays.","Icons representing each monitor are presented for configuration.","Which option will cause the laptop monitor to display the left half of the extended desktop?"], options:["Screen Resolution","Custom Scaling","Extend these displays","Duplicate these displays"], correct:[2], multi:true },
+41: { prompt:["A person recently ran updates on a device and the updates are interfering with a functionality of an app.","The person wants to possibly uninstall these updates.","Click the Windows setting category that will allow the user to view the driver installation history and possibly uninstall any updates."],Image: '<img src="q41_t2.png" alt="Q41_T2" style="max-width:100%;height:auto;">', options:["System","Bluetooth and Devices","Accessibility","Windows Update"], correct:[3], multi:true },
+      };
+
+    const type2Data = {
+      16: { prompt:"For each statement about backups and restores, select Yes if the statement is true and No if the statement is false.", statements:["In the context of full/incremental/differential backups, a restore always starts with the last full backup.","Incremental backups back up files that have changed since the last full or incremental backup.","Each differential backup in between full backups gets larger in size."], correct:["yes","yes","yes"] },
+17: { prompt:"For each statement regarding remote wipes, select Yes if the statement is true and No if the statement is false.", statements:["Remote wipes can wipe out all the data on a device.","Remote wipes can be set to only remove business data on a device.","Remote wipes are always triggered manually."], correct:["yes","yes","no"] },
+19: { prompt:"For each statement regarding Device Manager, select Yes if the statement is true and No if the statement is false.", statements:["Device Manager can be used to update drivers on hardware.","Device Manager can be used to update features on hardware.","Device Manager shows the devices that are disabled on a system."], correct:["yes","no","yes"] },
+23: { prompt:"For each of the following statements regarding desktop settings, select Yes if the statement is true or No if the statement is False.", statements:["Multiple monitors can be configured on a Windows device.","The time zone setting cannot be changed after Windows is installed.","Windows allows a personal photo to be used as a desktop image."], correct:["yes","no","yes"] },
+31: { prompt:"For each statement about user authentication, select Yes if the statement is true and No if the statement is false.", statements:["A common form of two-factor authentication is to require a password and a code sent as a text message to a registered smartphone.","Smartcards are a form of biometric authentication.","A strong password has at least six characters."], correct:["yes","no","no"] },
+34: { prompt:"For each of the following statements about gpresult and gpupdate, select Yes if the statement is True or No if the statement is false.", statements:["gpresult /V will display detailed group policy information.","gpresult /R will display group policy settings on a remote computer.","gpupdate /force refreshes group policy settings on a local computer immediately."], correct:["yes","no","yes"] },
+36: { prompt:"For each statement about troubleshooting operating system and application compatibility issues, select Yes if the statement is true and No if the statement is false.", statements:["The Compatibility Troubleshooter can help determine compatibility issues within an app.","Some apps can be run in Compatibility Mode to be compatible with a newer operating system.","Apps cannot be run at a lower screen resolution than intended."], correct:["yes","yes","no"] },
+
+    };
+
+    const type3Data = {
+      2:  {
+        prompt:[
+          "Using drag and match, match each virtual machine host to the type of virtual machines the host provides."
+        ],
+        statements:[
+          "Microsoft-based cloud host for virtual machines:",
+          "Non-Microsoft-based cloud host for virtual machines:",
+          "Microsoft on-premises virtual machines host:"
+        ],
+        items:["Hyper-V","Azure","AWS"],
+        correct:[1,2,0]
+      },
+      14: {
+        prompt:[
+          "Using drag and drop, match each accessibility setting with the accessibility need it helps."
+        ],
+        statements:[
+          "Vision:",
+          "Hearing:",
+          "Mobility:"
+        ],
+        items:[" High-Contrast", "Closed captions","Sticky Keys"],
+        correct:[0,1,2]
+      },
+      28: {
+        prompt:[
+          "Using drag and drop, match each connection type in the image below with the peripheral device it typically attaches."
+        ],
+        Image: '<img src="q28_t2.png" alt="Q28_T2" style="max-width:100%;height:auto;">',
+        statements:[
+          "Headset:",
+          "Network:",
+          "TV:",
+          "Printer:",
+          "Smartphone:"
+        ],
+        items:["USB","HDMI","Ethernet","USB Type-C", "AUDIO"],
+        correct:[4,2,1,0,3]
+      },
+      30: {
+        prompt:[
+          "Using drag and drop, match each network type found typically in a business setting on the left with its description on the right."
+        ],
+        statements:[
+          "An external-facing network that interacts with the internet:",
+          "A network that has its resources protected from outside access:",
+          "A network that is separated from other networks in an organization and typically allows people internet access but keeps them away from important company resources."
+        ],
+        items:[" Guest","Private","Public"],
+        correct:[2,1,0]
+      },
+      35: {
+        prompt:[
+          "Using drag and drop, match each troubleshooting tool on the left with the issue it will solve on the right."
+        ],
+        statements:[
+          "Issue caused by an update to the operating system:",
+          "Need to upgrade the BIOS:",
+          "Erratic behavior after installing a new driver:"
+        ],
+        items:["Advanced Startup","Safe Mode","RollBack"],
+        correct:[2,0,1]
+      }
+    };
+
+    const type4Data = {
+      5: {
+        intro:"For each malware attack description, indicate the attack being described, using the dropdown arrows on each description.",
+        subs:[
+          { text:"Data is stolen from a legal firm and encrypted. Money is then demanded for the legal firm to get back its data, decrypted.", options:["Ransomware","Spyware","Adware"], correct:"Ransomware" },
+          { text:"An email from what appears to be a bank tells a person an account problem needs to be solved and a link is provided to allow the person to enter username and password information into the illegitimate site.", options:["On-path attack","Keylogging", "Phishing"], correct:"Phishing" },
+          { text:"Information and activity are stolen and then used to launch a replay attack at a later date.", options:["Social Engineering","Phishing","Keylogging"], correct:"Keylogging" }
+        ]
+      },
+      27: {
+        intro:"A laptop has two USB-A ports, one USB-C port, and needs to have an external monitor with an HDMI port connected to the laptop. The USB-A port has an external drive connected to it. An iPhone, which uses a USB-C cable, needs to be plugged into the laptop on occasion to sync files and get charged. Using the dropdown lists, indicate whether the devices chosen will satisfy the requirements for the laptop and its devices.",
+        subs:[
+          { text:"A USB-A to HDMI adapter will allow the monitor to use its HDMI port and connect the USB-A end to one of the USB-A ports on the laptop.", options:["yes","no"], correct:"yes" },
+          { text:"The laptop's owner found a USB-A to USB-C connector. Now, what adapter is needed? ", options:["USB-C to HDMI","USB hub", "USB-A to HDMI"], correct:"USB-C to HDMI" },
+          { text:"An external storage device is typically connected to a computer using?", options:["VGA","HDMI","USB"], correct:"USB" },
+        ]
+      }
+    };
+
+    // === BUILDERS ===
+    function buildEmpty(q) {
+      const d = document.createElement('div');
+      d.className = 'question';
+      const p = document.createElement('p');
+      p.className = 'header';
+      p.textContent = `Q${q}.`;
+      d.appendChild(p);
+      return d;
+    }
+
+    function buildType1(q) {
+      const cfg = type1Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((txt,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${txt}` : txt;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      // Render image if present (after prompt)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+      const opts = document.createElement('div');
+      opts.className = 'options';
+      cfg.options.forEach((opt,i) => {
+        const lbl = document.createElement('label');
+        const inp = document.createElement('input');
+        inp.type = cfg.multi ? 'checkbox' : 'radio';
+        inp.name = `q${q}`;
+        inp.value = i;
+        lbl.appendChild(inp);
+        lbl.appendChild(document.createTextNode(opt));
+        opts.appendChild(lbl);
+      });
+      d.appendChild(opts);
+      return d;
+    }
+
+    function buildType2(q) {
+      const cfg = type2Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.prompt}`;
+      d.appendChild(h);
+      cfg.statements.forEach((stmt,i) => {
+        const block = document.createElement('div');
+        const sp = document.createElement('p');
+        sp.className = 'statement';
+        sp.textContent = `${i+1}. ${stmt}`;
+        block.appendChild(sp);
+        const opts = document.createElement('div');
+        opts.className = 'options';
+        // IMPORTANT: 0 = No, 1 = Yes
+        ['No','Yes'].forEach((label, idx) => {
+          const lbl = document.createElement('label');
+          const inp = document.createElement('input');
+          inp.type = 'radio';
+          inp.name = `q${q}-${i}`;
+          inp.value = idx; // 0 for No, 1 for Yes
+          lbl.appendChild(inp);
+          lbl.appendChild(document.createTextNode(label));
+          opts.appendChild(lbl);
+        });
+        block.appendChild(opts);
+        d.appendChild(block);
+      });
+      return d;
+    }
+
+    function buildType3(q) {
+      const cfg = type3Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((line,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${line}` : line;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      // Render image if present (after prompt)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+      const pool = document.createElement('div');
+      pool.className = 'pool';
+      cfg.items.forEach((it,i) => {
+        const itm = document.createElement('div');
+        itm.className = 'draggable-item';
+        itm.draggable = true;
+        itm.id = `q${q}-itm-${i}`;
+        itm.textContent = it;
+        pool.appendChild(itm);
+      });
+      d.appendChild(pool);
+      cfg.statements.forEach((stmt,i) => {
+        const zone = document.createElement('div');
+        zone.className = 'drop-zone';
+        zone.id = `q${q}-zone-${i}`;
+        zone.textContent = stmt;
+        d.appendChild(zone);
+      });
+      pool.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+      });
+      d.querySelectorAll('.drop-zone, .pool').forEach(z => {
+        z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('dragover'); });
+        z.addEventListener('dragleave', () => z.classList.remove('dragover'));
+        z.addEventListener('drop', e => {
+          e.preventDefault(); z.classList.remove('dragover');
+          const id = e.dataTransfer.getData('text/plain');
+          const dragged = document.getElementById(id);
+          if (dragged) z.appendChild(dragged);
+        });
+      });
+      return d;
+    }
+
+    function buildType4(q) {
+      const cfg = type4Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.intro}`;
+      d.appendChild(h);
+      // Render image if present (before subs)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+
+      cfg.subs.forEach((sub,i) => {
+        const p = document.createElement('p');
+        p.className = 'statement';
+        p.textContent = `${i+1}. ${sub.text} `;
+        const sel = document.createElement('select');
+        sel.name = `q${q}-${i}`;
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = 'Select';
+        sel.appendChild(empty);
+        sub.options.forEach((opt,idx) => {
+          const o = document.createElement('option');
+          o.value = idx; // index mapping for answer codes
+          o.textContent = opt.charAt(0).toUpperCase()+opt.slice(1);
+          sel.appendChild(o);
+        });
+        p.appendChild(sel);
+        if (sub.suffix) p.appendChild(document.createTextNode(sub.suffix));
+        d.appendChild(p);
+      });
+      return d;
+    }
+
+    // === HELPERS ===
+    function arraysEqual(a,b){ if(!Array.isArray(a)||!Array.isArray(b))return false; if(a.length!==b.length)return false; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return false; return true; }
+
+    function getUserAnswer(q) {
+      if (type1Data[q]) {
+        const inputs = Array.from(document.querySelectorAll(`input[name="q${q}"]:checked`));
+        const sel = inputs.map(i => +i.value);
+        return sel.sort((x,y)=>x-y); // sort for multi
+      } else if (type2Data[q]) {
+        const cfg = type2Data[q];
+        return cfg.statements.map((_,i) => {
+          const r = document.querySelector(`input[name="q${q}-${i}"]:checked`);
+          return r ? +r.value : null; // 0=No,1=Yes
+        });
+      } else if (type3Data[q]) {
+        return type3Data[q].statements.map((_,i) => {
+          const itm = document.getElementById(`q${q}-zone-${i}`).querySelector('.draggable-item');
+          return itm ? +itm.id.split('-').pop() : null;
+        });
+      } else if (type4Data[q]) {
+        return type4Data[q].subs.map((_,i) => {
+          const sel = document.querySelector(`select[name="q${q}-${i}"]`);
+          return sel ? (sel.value===''?null:+sel.value) : null;
+        });
+      }
+      return [];
+    }
+
+    // === RENDER ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const host = document.getElementById('questionsContainer');
+      for (let q = 1; q <= 41; q++) {
+        let node;
+        if      (type1Data[q]) node = buildType1(q);
+        else if (type2Data[q]) node = buildType2(q);
+        else if (type3Data[q]) node = buildType3(q);
+        else if (type4Data[q]) node = buildType4(q);
+        else                   node = buildEmpty(q);
+        node.id = `question-${q}`;
+        host.appendChild(node);
+      }
+
+      // Timer
+let sec = 50 * 60;
+const tEl = document.getElementById('timer');
+const timerInterval = setInterval(() => {
+  const m = Math.floor(sec/60), s = String(sec%60).padStart(2,'0');
+  tEl.textContent = `Submitting in ${m}:${s}`;
+  sec--;
+
+  if (sec < 0) {
+    clearInterval(timerInterval);
+    // declanșează click pe butonul de submit
+    document.getElementById('submitBtn').click();
+
+    // popup + redirect
+    setTimeout(() => {
+      if (confirm("Timpul a expirat!\nVezi scorul și codul răspunsurilor?\nApasă OK pentru a merge la select.html")) {
+        window.location.href = "select.html";
+      }
+    }, 300);
+  }
+}, 1000);
+       
+
+      // Submit
+      document.getElementById('submitBtn').addEventListener('click', () => {
+        let correctCount = 0;
+        const userKey = [];
+
+        for (let q = 1; q <= 41; q++) {
+          const ans = getUserAnswer(q);
+          userKey.push(ans);
+          const ok = arraysEqual(ans, answerKey[q-1]);
+          const el = document.getElementById(`question-${q}`);
+          el.classList.remove('correct-bg','incorrect-bg');
+          if (ok) { el.classList.add('correct-bg'); correctCount++; }
+          else    { el.classList.add('incorrect-bg'); }
+
+          // show correct code under the question
+          let codeEl = el.querySelector('.correct-code');
+          if (!codeEl) {
+            codeEl = document.createElement('div');
+            codeEl.className = 'correct-code';
+            el.appendChild(codeEl);
+          }
+          codeEl.textContent = `Correct code: ${JSON.stringify(answerKey[q-1])}`;
+        }
+
+        const points = Math.round((correctCount/41)*1000);
+        const result = document.getElementById('resultContainer');
+        result.innerHTML = `<h3>You scored ${points} points</h3><p>Your answer code:</p><pre>${JSON.stringify(userKey)}</pre>`;
+      });
+    });
+  </script>
+</body>
+</html>
+

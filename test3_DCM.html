@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TEST 3 DCM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Reset and base styles */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f5f5f5 100%);
+      min-height: 100vh;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #22223b;
+      padding: 0;
+      margin: 0;
+      letter-spacing: 0.01em;
+      font-size: 1.08rem;
+      background-attachment: fixed;
+    }
+    .container {
+      max-width: 980px;
+      margin: 40px auto 40px auto;
+      background: rgba(255,255,255,0.98);
+      padding: 32px 28px 32px 28px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(30,41,59,0.13), 0 1.5px 6px rgba(30,41,59,0.06);
+      border: 1.5px solid #e0e7ff;
+      position: relative;
+      min-height: 80vh;
+    }
+    .timer {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  background: linear-gradient(90deg, #f59e0b 60%, #fbbf24 100%);
+  color: #22223b;
+  font-weight: bold;
+  text-align: center;
+  padding: 14px 0;
+  border-radius: 0 0 10px 10px; /* colțuri doar jos, ca să arate mai natural */
+  margin-bottom: 28px;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.08);
+  border: 1.5px solid #fbbf24;
+  text-shadow: 0 1px 0 #fff8;
+}
+
+    .question {
+      border: 1.5px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 22px 20px 18px 20px;
+      margin-bottom: 28px;
+      background: linear-gradient(120deg, #f3f4f6 80%, #e0e7ff 100%);
+      box-shadow: 0 2px 8px rgba(59,130,246,0.06);
+      transition: background-color .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .question:hover {
+      background: linear-gradient(120deg, #e0e7ff 80%, #f3f4f6 100%);
+      box-shadow: 0 4px 16px rgba(59,130,246,0.10);
+      border-color: #6366f1;
+    }
+    .correct-bg {
+      background: linear-gradient(90deg, #e6ffed 80%, #bbf7d0 100%) !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 2px 12px rgba(34,197,94,0.09);
+      animation: correctPulse 0.7s;
+    }
+    .incorrect-bg {
+      background: linear-gradient(90deg, #ffe6e6 80%, #fecaca 100%) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 2px 12px rgba(239,68,68,0.09);
+      animation: incorrectPulse 0.7s;
+    }
+    @keyframes correctPulse {
+      0% { box-shadow: 0 0 0 0 #22c55e44; }
+      70% { box-shadow: 0 0 0 10px #22c55e22; }
+      100% { box-shadow: 0 2px 12px rgba(34,197,94,0.09);}
+    }
+    @keyframes incorrectPulse {
+      0% { box-shadow: 0 0 0 0 #ef444444; }
+      70% { box-shadow: 0 0 0 10px #ef444422; }
+      100% { box-shadow: 0 2px 12px rgba(239,68,68,0.09);}
+    }
+    .header {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 1.18rem;
+      color: #3730a3;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    .subtext {
+      margin: 0 0 14px 0;
+      color: #374151;
+      font-size: 1.01rem;
+      font-style: italic;
+      opacity: 0.92;
+    }
+    .options {
+      margin-left: 24px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+    }
+    .options label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 1.04rem;
+      padding: 4px 0 4px 0;
+      transition: background 0.2s;
+      border-radius: 6px;
+      gap: 8px;
+    }
+    .options label:hover {
+      background: #e0e7ff;
+    }
+    .options input[type="radio"],
+    .options input[type="checkbox"] {
+      accent-color: #6366f1;
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      transition: accent-color 0.2s;
+    }
+    .statement {
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 1.07rem;
+      letter-spacing: 0.01em;
+    }
+    .pool {
+      background: linear-gradient(90deg, #eef 80%, #dbeafe 100%);
+      padding: 10px 8px 10px 8px;
+      border: 1.5px solid #818cf8;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      min-height: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    .draggable-item {
+      display: inline-block;
+      background: linear-gradient(90deg, #2563eb 80%, #60a5fa 100%);
+      color: #fff;
+      padding: 6px 14px;
+      margin: 4px 6px 4px 0;
+      border-radius: 8px;
+      cursor: grab;
+      font-weight: 500;
+      font-size: 1.01rem;
+      box-shadow: 0 2px 8px #2563eb22;
+      border: 1.5px solid #1e40af;
+      transition: background 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .draggable-item:active {
+      background: #1e40af;
+      box-shadow: 0 2px 12px #1e40af33;
+    }
+    .drop-zone {
+      min-height: 48px;
+      padding: 12px 10px;
+      margin: 10px 0 10px 0;
+      border: 2.5px dashed #cbd5e1;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-size: 1.04rem;
+      color: #334155;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .drop-zone.dragover {
+      background: #e0e7ff;
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+    }
+    select {
+      margin-left: 10px;
+      padding: 6px 16px 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 1.04rem;
+      background: #f3f4f6;
+      color: #22223b;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      min-width: 90px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+      background: #e0e7ff;
+    }
+    #submitBtn {
+      display: block;
+      margin: 32px auto 0 auto;
+      padding: 16px 36px;
+      font-size: 1.13rem;
+      color: #fff;
+      background: linear-gradient(90deg, #2563eb 80%, #6366f1 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      box-shadow: 0 2px 12px #2563eb22;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      outline: none;
+    }
+    #submitBtn:hover, #submitBtn:focus {
+      background: linear-gradient(90deg, #6366f1 80%, #2563eb 100%);
+      box-shadow: 0 4px 18px #6366f122;
+      transform: translateY(-2px) scale(1.03);
+    }
+    #resultContainer {
+      text-align: center;
+      margin-top: 32px;
+      padding: 18px 0 0 0;
+      font-size: 1.15rem;
+      color: #1e293b;
+      background: linear-gradient(90deg, #e0e7ff 80%, #f3f4f6 100%);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #818cf822;
+      min-height: 60px;
+    }
+    #resultContainer h3 {
+      color: #2563eb;
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+      font-weight: 800;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    pre {
+      text-align: left;
+      background: #f3f4f6;
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: inline-block;
+      overflow-x: auto;
+      font-size: 0.97rem;
+      color: #334155;
+      margin-top: 10px;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1.5px solid #e0e7ff;
+    }
+    .correct-code {
+      font-size: 0.98rem;
+      font-style: italic;
+      margin-top: 10px;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: inline-block;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1px solid #e0e7ff;
+    }
+    /* Responsive styles */
+    @media (max-width: 700px) {
+      .container {
+        padding: 10px 2vw 10px 2vw;
+        border-radius: 8px;
+      }
+      .question {
+        padding: 12px 6px 10px 6px;
+        border-radius: 8px;
+      }
+      .header {
+        font-size: 1.05rem;
+      }
+      #submitBtn {
+        padding: 12px 18px;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+      .pool, .drop-zone {
+        font-size: 0.98rem;
+        min-height: 36px;
+        border-radius: 6px;
+      }
+      select {
+        font-size: 0.98rem;
+        border-radius: 6px;
+      }
+    }
+    /* Custom scrollbar for pool and pre */
+    .pool, pre {
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 #e0e7ff;
+    }
+    .pool::-webkit-scrollbar, pre::-webkit-scrollbar {
+      height: 8px;
+      background: #e0e7ff;
+      border-radius: 8px;
+    }
+    .pool::-webkit-scrollbar-thumb, pre::-webkit-scrollbar-thumb {
+      background: #6366f1;
+      border-radius: 8px;
+    }
+    /* Subtle fade-in animation for questions */
+    .question {
+      opacity: 0;
+      animation: fadeInQ 0.7s forwards;
+    }
+    .question:nth-child(1) { animation-delay: 0.05s; }
+    .question:nth-child(2) { animation-delay: 0.10s; }
+    .question:nth-child(3) { animation-delay: 0.15s; }
+    .question:nth-child(4) { animation-delay: 0.20s; }
+    .question:nth-child(5) { animation-delay: 0.25s; }
+    .question:nth-child(6) { animation-delay: 0.30s; }
+    .question:nth-child(7) { animation-delay: 0.35s; }
+    .question:nth-child(8) { animation-delay: 0.40s; }
+    .question:nth-child(9) { animation-delay: 0.45s; }
+    .question:nth-child(10) { animation-delay: 0.50s; }
+    @keyframes fadeInQ {
+      to { opacity: 1; }
+    }
+    /* Miscellaneous */
+    ::selection {
+      background: #6366f1;
+      color: #fff;
+    }
+    input:focus, button:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="timer" id="timer">Submitting in 50:00</div>
+    <form id="testForm" onsubmit="return false">
+      <div id="questionsContainer"></div>
+      <button type="button" id="submitBtn">Submit</button>
+    </form>
+    <div id="resultContainer"></div>
+  </div>
+
+  <script>
+    // Block access if not logged in
+  if(sessionStorage.getItem('loggedIn') !== 'true'){
+    alert('Please login first!');
+    window.location.href = 'index.html'; // redirect to login page
+  }
+    // === YOUR ANSWER KEY (source of truth) ===
+    const answerKey = [
+     [2],[2],[0],[1,0,3,2],[1,0,1],[0],[0],[1,0,1],[0,1,0],[0,0,1],
+     [1],[2],[3],[0],[2,3,0,1],[3],[0,1,1],[0],[1,0,1],[1,3,0,2],
+     [1,1,0],[2],[0,1,0],[0],[0,0,1],[0],[0,0,1],[0],[1,0,0],[0,0,1],
+     [2],[0],[0,1],[3],[3],[1],[0],[2,1,1],[0,0,1],[0,0,1,1],
+     [2],[1]
+    ];
+
+    // === DATASETS (from your original) ===
+    const type1Data = {
+      2:  { prompt:["Which Windows feature displays a consent prompt when a user attempts to install software?"], options:["Active Directory (AD)","Windows Hello","User Account Control (UAC)","Windows Defender"], correct:[2], multi:true },
+      3:  { prompt:["In Task Manager, which tab should you use to end a program that is not responding?"], options:["Processes","App history","Performance","Startup apps"], correct:[0], multi:true },
+      6:  { prompt:["In which settings can you find monitor resolution and refresh rate?"], options:["Advanced display","Accessibility","Gaming","Device Manager"], correct:[0], multi:true },
+      7:  {  prompt:["Microsoft Word crashes.","Which Event Viewer log should you check for errors? Select the correct option in the answer area."],Image: '<img src="q7_t3.PNG" alt="Q7 Image" style="max-width:300px;display:block;margin-bottom:10px;">', options:["Application","Security","Setup","System","Forwarded Events"], correct:[0], multi:true },
+      11:  { prompt:["What is the purpose of the Microsoft Store?"], options:["An online marketplace for buying Microsoft branded computers and peripherals","A digital distribution platform and marketplace for Microsoft approved applications","An online marketplace for selling and buying used hardware","A digital distribution platform and marketplace for all applications"], correct:[1], multi:true },
+      12:  { prompt:["You are currently using a password to log into your Windows 11 computer. You want to use a different factor of authentication than your password. However, you do not have any biometric scanners available.","Which option should you select to configure your new authentication method?"],Image: '<img src="q12_t3.PNG" alt="Q12 Image" style="max-width:300px;display:block;margin-bottom:10px;">', options:["Facial recognition (Windows Hello)","Fingerprint recognition (Windows Hello)","PIN (Windows Hello)","Security key"], correct:[2], multi:true },
+      13:  { prompt:["Where can you increase or decrease the size of the mouse pointer in Windows 11?"], options:["Hardware and Sound","Ease of Access","Personalization","Accessibility"], correct:[3], multi:true },
+      14: { prompt:["A user wants a recommendation for an account where they can easily share files and settings between multiple, personally-owned computers at home.","Which type of account should you recommend?" ], options:["Microsoft Account","Local Account","Domain Account","Guest Account"], correct:[0], multi:true },
+      16: { prompt:["You have determined that a non-responsive application is causing your Windows 11 machine to perform slowly.","Which Task Manager tab and action should you use to resolve this issue?"], options:["Performance -> Monitor Resource usage","Services -> Stop service","Startup apps -> Disable","Processes -> End Task"], correct:[3], multi:true },
+      18: { prompt:["You install a new feature update on your Windows 11 machine and then install a new application, but the update has caused several issues in the few hours you've had it installed.","You want to revert to the previous version of Windows but keep your newly installed application. Which feature should you use to accomplish this?" ], options:["Go back","System Image Recovery","System Restore","Reset this PC"], correct:[0], multi:true },
+      22: { prompt:["You updated to the latest driver for your touchpad on your Windows 11 laptop. Now you cannot move the mouse pointer with the touchpad. The touchpad was working correctly before the update. You need to make the touchpad work again. You open the properties dialog box for the touchpad in Device Manager.","Which button should you select?" ], Image: '<img src="q22_t3.PNG" alt="Q22 Image" style="max-width:300px;display:block;margin-bottom:10px;">', options:["Driver Details","Update Driver","Roll Back Driver","Disable Device","Uninstall Device"], correct:[2], multi:true },
+      24: { prompt:["A worker reports that their Windows 11 computer is not applying the new security settings implemented by the IT department. These settings include password complexity requirements and screen timeout policies.","You need to manually refresh the settings on the worker's computer. What should you do?" ], options:["Run the gpupdate /force command from the command prompt","Open System Information and choose Refresh from the View menu","Run the gpresult /h command from the command prompt","Open Local Security Policy and choose Reload from the Action menu"], correct:[0], multi:true },
+      26: { prompt:["A user cannot connect to the network.","You need to determine their IP address and default gateway. Which command should you enter at the command line?" ], options:["ipconfig","ipconfig /release","ping 0.0.0.0","ping 127.0.0.1"], correct:[0], multi:true },
+      28: { prompt:["Which Windows 11 Professional account type is used to log into an organization's network and access the resources and services available on that network." ], options:["Domain Account","Local Standard Account","Microsoft account","Local Administrator Account"], correct:[0], multi:true },
+      31: { prompt:["You want to ensure that a Windows 11 computer backs up all files in the D:\Books folder even when not connected to the internet. No other folders or files should be backed up. The backup should occur automatically every 10 minutes.","The solution should allow you to restore previous versions of all files in that folder. What should you do?" ], options:["Configure System Restore to create restore points on a schedule","Configure OneDrive to sync user files","Enable File History to save copies of files to a network drive","Use Backup and Restore to create a system image"], correct:[2], multi:true },
+      32: { prompt:["What is the primary function of the Windows Registry?" ], options:["Stores data for profiles, applications, and hardware drivers","Indexes data in the file system to improve searching","Verifies the integrity of files on the hard drive","Provides protection from malicious software and related threats"], correct:[0], multi:true },
+      34: { prompt:["You need to assign a new IP address to all network adapters on a computer.","Which command should you enter at the command prompt?" ], options:["ipconfig /release","ipconfig /all","ipconfig","ipconfig /renew"], correct:[3], multi:true },
+      35: { prompt:["You are working as a tier 1 technical support technician for a company that has 4 tiers of technical support personnel. An employee is experiencing an issue that requires specialized knowledge about hardware that is different from the hardware you have been trained on.","How should you assist the user in resolving their issue?" ], options:["Submit a request to be trained in the unique hardware and software to support the employee","Call the hardware vendor to receive training to help support the employee","Provide the employee with phone numbers for the hardware vendor to receive support","Escalate the employee's issue to a tier 2 technical support technician"], correct:[3], multi:true },
+      36: { prompt:["What is a limitation when using Copilot for Windows?" ], options:["Only Microsoft applications can be located and started using Copilot","It is only natively installed on computers running Windows 11 and some computers using Windows 10","Copilot requires a paid subscription to create an image","All questions must be written in complete sentences"], correct:[1], multi:true },
+      37: { prompt:["A computer that is used by multiple users has an SSD formatted with NTFS. Some files are encrypted and protected by permissions. A user copies files from the SSD to an external drive formatted with FAT32.","What is the status of the permissions and encryption for the copied files?" ], options:["The files lost their permissions and encryption","The files still have their permissions set, but their encryption was lost","The files are still encrypted, but their permissions were lost","The files retained their encryption and permissions"], correct:[0], multi:true },
+      41: { prompt:["Which Windows 11 Home Edition account type is required for you to manage system files?" ], options:["Standard User Account","Microsoft Account","Administrator User Account","Domain User Account"], correct:[2], multi:true },
+      42: { prompt:["You have just run a malware scan and received these results: Windows Defender quarantined a dangerous program. Your IT department confirms that the program is falsely triggering Windows Defender and is not actually dangerous.","Which action should you take?" ], options:["Run the scan again","Recover the file from quarantine","Find and delete the file in Windows Explorer","Reinstall the program"], correct:[1], multi:true },
+      };
+
+    const type2Data = {
+      5:  { prompt:"A computer's maximum supported RAM capacity and speed are determined by the motherboard. For each statement about motherboards, select True or False.", statements:["A computer's maximum supported RAM capacity and speed are determined by the motherboard","You can upgrade an Intel processor to an AMD processor without changing the motherboard","BIOS settings are stored on the motherboard"], correct:['yes','no','yes'] },
+      10: { prompt:"For each statement about installing or removing applications, select True or False.", statements:["64-bit applications are installed in the \"C:\\Program Files (x86)\" folder by default","Deleting an application's folder and its associated files uninstalls it from the computer and removes the associated registry settings","A User Account Control (UAC) prompt displays when Standard Users install applications in the \"Program Files\" or \"Program Files (x86)\" folders"], correct:['no','no','yes'] },
+      17: { prompt:"For each statement about using the Microsoft Authenticator app in Windows 11, select True or False.", statements:["Microsoft Authenticator app can send push notifications to approve sign-in attempts for both local and Microsoft accounts","You can use the Microsoft Authenticator app to login if you forget your password","Microsoft Authenticator app generates time-based one-time passwords as part of the multi-factor authentication process"], correct:['no','yes','yes'] },
+      19: { prompt:"For each statement about Device Manager and Disk Management, select True or False.", statements:["Setting up a new drive is done through Disk Management","Freeing up disk space for a slow running computer is done through Disk Management","Manually updating drivers can be done through the Device Manager"], correct:['yes','no','yes'] },
+      21: { prompt:"For each statement about Windows Update settings in Windows 11, select True or False.", statements:["Optional updates are accessible directly from Windows Update Advanced Options","Uninstall for recently installed updates can be accessed under update history","Required updates that are pending installation will only install when active hours are set"], correct:['yes','yes','no'] },
+      25: { prompt:"For each statement, select True or False.", statements:["RAM is non-volatile","A low latency HDD is faster than an SSD","Physical storage includes SSD, HDD, and flash drives"], correct:['no','no','yes'] },
+      29: { prompt:"For each statement about Active Directory, select True or False.", statements:["It allows users to use their credentials throughout the network","It allows efficient searching of files on your computer","It allows all users to configure their own rights"], correct:['yes','no','no'] },
+      30: { prompt:"For each statement about connectors, select True or False.", statements:["A DVI cable can be plugged into a VGA port without an adapter","A USB-C cable can be plugged into a USB-A port without an adapter","A USB 3.0 cable can be plugged into a USB 1.0 port without an adapter"], correct:['no','no','yes'] },
+      39: { prompt:"For each statement about NTFS, exFAT, and FAT32, select True or False.", statements:["NTFS supports a maximum file size of 4GB","FAT32 supports partitions up to 32TB","ExFAT is ideal for flash drives and supports storage media up to 256TB"], correct:['no','no','yes'] },
+      40: { prompt:"You are configuring the desktop environment for a Windows 11 computer. For each configuration option, select Yes if it can be locally configured or No if it cannot.", statements:["Logo on the Start button","Taskbar location","Display resolution and orientation","Folders that appear in the Start menu"], correct:['no','no','yes','yes'] }
+    };
+
+    const type3Data = {
+      4:  {
+        prompt:[
+          "Move each service from the list on the left","to the correct service description on the right."
+        ],
+        statements:[
+          "A collection of cloud-based productivity apps",
+          "Works like a binder with tabs separating sections and pages",
+          "Used for storing documents for collaboration across an organization",
+          "Can be used to run an operating system and is accessible from Windows, macOS, or ChromeOS"
+        ],
+        items:["OneNote","Microsoft 365","Windows 365","SharePoint"],
+        correct:[1,0,3,2]
+      },
+      15: {
+        prompt:[
+          "Move each connector type from the list on the left","to the correct description on the right."
+        ],
+        statements:[
+          "This connector can deliver both power and data to a device.",
+          "This connector is typically found on legacy monitors and computers.",
+          "This connector is used by monitors and computers, but not game consoles.",
+          "This connector is used by televisions, computers, game consoles, and projectors."
+        ],
+        items:[" DisplayPort","HDMI","USB Type-C", "VGA"],
+        correct:[2,3,0,1]
+      },
+      20: {
+        prompt:[
+          "Move each term from the list on the left","to the correct definition on the right."
+        ],
+        statements:[
+          "Self replicating malware",
+          " Malware that is disguised as legitimate software",
+          "An attack that targets websites and servers by disrupting network services in an attempt to exhaust an application's resources",
+          "An attack that aims to steal or damage sensitive data by deceiving people into revealing personal information like passwords and credit card numbers"
+        ],
+        items:["DDOS","Worm","Phishing","Trojan Horse"],
+        correct:[1,3,0,2]
+      }
+    };
+
+    const type4Data = {
+      1: {
+        intro:"You connected an external hard drive to your Windows 11 computer via a USB-C cable. However, you cannot find the drive in Windows Explorer. When you open Device Manager, you only see the internal Toshiba disk drive. What should you do to make the external drive visible?",
+        subs:[
+          { text:"What should you do to solve this problem?", options:["Click Show hidden devices from the View menu","Click Add legacy hardware from the Actions menu","Click Scan for hardware changes from the Action menu", "Click File Options to access Disk Cleanup"], correct:"Click Scan for hardware changes from the Action menu" }
+        ]
+      },
+      8: {
+        intro:"Determine whether each statement describes a Private network or a Public network.",
+        subs:[
+          { text:"Network discovery is turned off to prevent other devices on the network from seeing your computer.", options:["Private","Public"], suffix:" backup.", correct:"Public" },
+          { text:"This network profile is typically used for home or office networks where you trust the devices connected.", options:["Private","Public"], suffix:" backup.", correct:"Private" },
+          { text:"This network profile is used when you connect as a guest to a network where you do not have a user account.", options:["Private","Public"], suffix:" backup.", correct:"Public" }
+        ]
+      },
+      9: {
+        intro:"You have lost connection to the Internet. You suspect this has something to do with the Wi-Fi connection to your router. What are some troubleshooting steps you can take? Complete the sentences by selecting the correct option from each drop-down list.",
+        subs:[
+          { text:"Go to command prompt and", options:["type ipconfig","type flushdns"], correct:"type ipconfig" },
+          { text:"If the No Internet icon is visible, verify", options:["your ethernet cable is connected","your WI-Fi is turned on"], correct:"your WI-Fi is turned on" },
+          { text:"You should also try", options:["restarting the modem and wireless router","enabling a Bluetooth connection"], correct:"restarting the modem and wireless router" }
+        ]
+      },
+      23: {
+        intro:"A Windows 11 file server named FS1 has a folder named D:\Projects\Training. This folder is shared as Training. You have access to the shared folder, and you have the ability to use Remote Desktop to connect to FS1. The NTFS and Share permissions on the Training folder are shown in the exhibit. Evaluate the image and answer the questions by selecting the correct option from each drop-down list.",
+        Image: '<img src="q23_t3.PNG" alt="Q23 Image" style="max-width:300px;display:block;margin-bottom:10px;">',
+        subs:[
+          { text:"Can you open a file at \\FS1\Training?", options:["Yes","No"], correct:"Yes" },
+          { text:"Can you create a file at \\FS1\Training?", options:["Yes","No"], correct:"No" },
+          { text:"Can you edit a file at D:\Projects\Training if you remote in to FS1?", options:["Yes","No"], correct:"Yes" }
+        ]
+      },
+      27: {
+        intro:"You connect a Windows 11 laptop to a 50\" wide-screen FHD television wirelessly. You want to cast a video encoded in 4K with Windows Media Player to the television. Only Windows Media content must be shown on the television. All other desktop menus and icons should be shown on the laptop. The system tray must not be visible on the television. The television must show the best clarity and detail of the Media Player content. You need to configure the orientation, resolution, and display settings for the content being cast. Select the correct settings in the graphic.",
+        Image: '<img src="q27_t3.PNG" alt="Q27 Image" style="max-width:300px;display:block;margin-bottom:10px;">',
+        subs:[
+          { text:"Display resolution", options:["1920x1080","3840x2160","1280x720", "800x600"], correct:"1920x1080" },
+          { text:"Display orientation", options:["Landscape","Portrait","Landscape (flipped)", "Portrait (flipped)"], correct:"Landscape" },
+          { text:"Multiple displays", options:["Duplicate these displays","Extend these displays","Show only on 1", "Show only on 2"], correct:"Extend these displays" }
+        ]
+      },
+      33: {
+        intro:"Select the correct power saving option from each drop-down list.",
+        subs:[
+          { text:"This Windows power saving option is appropriate for being away from your PC for a short period time and quickly resuming where you left off.", options:["Sleep","Hibernate","Shutdown"], correct:"Sleep" },
+          { text:"This Windows power saving option takes longer to resume, but keeps programs loaded in memory while it conserves power for an extended period of time.", options:["Sleep","Hibernate","Shutdown"], correct:"Hibernate" }
+        ]
+      },
+      38: {
+        intro:"Complete the sentences by selecting the correct option from each drop-down list.",
+        subs:[
+            { text:"The", options:["Read and Execute","List Folder Contents","Modify"], suffix:" permission allows you to create a subfolder.", correct:"Modify" },
+          { text:"The", options:["Write","Modify","Full Control"], suffix:"permission allows you to delete a subfolder.", correct:"Modify" },
+          { text:"The", options:["Read","Read and Execute","Write"], suffix:" permission allows you to run an application.", correct:"Read and Execute" }
+        ]
+      }
+    };
+
+    // === BUILDERS ===
+    function buildEmpty(q) {
+      const d = document.createElement('div');
+      d.className = 'question';
+      const p = document.createElement('p');
+      p.className = 'header';
+      p.textContent = `Q${q}.`;
+      d.appendChild(p);
+      return d;
+    }
+
+    function buildType1(q) {
+      const cfg = type1Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((txt,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${txt}` : txt;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      // Render image if present (after prompt)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+      const opts = document.createElement('div');
+      opts.className = 'options';
+      cfg.options.forEach((opt,i) => {
+        const lbl = document.createElement('label');
+        const inp = document.createElement('input');
+        inp.type = cfg.multi ? 'checkbox' : 'radio';
+        inp.name = `q${q}`;
+        inp.value = i;
+        lbl.appendChild(inp);
+        lbl.appendChild(document.createTextNode(opt));
+        opts.appendChild(lbl);
+      });
+      d.appendChild(opts);
+      return d;
+    }
+
+    function buildType2(q) {
+      const cfg = type2Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.prompt}`;
+      d.appendChild(h);
+      cfg.statements.forEach((stmt,i) => {
+        const block = document.createElement('div');
+        const sp = document.createElement('p');
+        sp.className = 'statement';
+        sp.textContent = `${i+1}. ${stmt}`;
+        block.appendChild(sp);
+        const opts = document.createElement('div');
+        opts.className = 'options';
+        // IMPORTANT: 0 = No, 1 = Yes
+        ['No','Yes'].forEach((label, idx) => {
+          const lbl = document.createElement('label');
+          const inp = document.createElement('input');
+          inp.type = 'radio';
+          inp.name = `q${q}-${i}`;
+          inp.value = idx; // 0 for No, 1 for Yes
+          lbl.appendChild(inp);
+          lbl.appendChild(document.createTextNode(label));
+          opts.appendChild(lbl);
+        });
+        block.appendChild(opts);
+        d.appendChild(block);
+      });
+      return d;
+    }
+
+    function buildType3(q) {
+      const cfg = type3Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((line,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${line}` : line;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      const pool = document.createElement('div');
+      pool.className = 'pool';
+      cfg.items.forEach((it,i) => {
+        const itm = document.createElement('div');
+        itm.className = 'draggable-item';
+        itm.draggable = true;
+        itm.id = `q${q}-itm-${i}`;
+        itm.textContent = it;
+        pool.appendChild(itm);
+      });
+      d.appendChild(pool);
+      cfg.statements.forEach((stmt,i) => {
+        const zone = document.createElement('div');
+        zone.className = 'drop-zone';
+        zone.id = `q${q}-zone-${i}`;
+        zone.textContent = stmt;
+        d.appendChild(zone);
+      });
+      pool.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+      });
+      d.querySelectorAll('.drop-zone, .pool').forEach(z => {
+        z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('dragover'); });
+        z.addEventListener('dragleave', () => z.classList.remove('dragover'));
+        z.addEventListener('drop', e => {
+          e.preventDefault(); z.classList.remove('dragover');
+          const id = e.dataTransfer.getData('text/plain');
+          const dragged = document.getElementById(id);
+          if (dragged) z.appendChild(dragged);
+        });
+      });
+      return d;
+    }
+
+    function buildType4(q) {
+      const cfg = type4Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.intro}`;
+      d.appendChild(h);
+      // Render image if present (before subs)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+
+      cfg.subs.forEach((sub,i) => {
+        const p = document.createElement('p');
+        p.className = 'statement';
+        p.textContent = `${i+1}. ${sub.text} `;
+        const sel = document.createElement('select');
+        sel.name = `q${q}-${i}`;
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = 'Select';
+        sel.appendChild(empty);
+        sub.options.forEach((opt,idx) => {
+          const o = document.createElement('option');
+          o.value = idx; // index mapping for answer codes
+          o.textContent = opt.charAt(0).toUpperCase()+opt.slice(1);
+          sel.appendChild(o);
+        });
+        p.appendChild(sel);
+        if (sub.suffix) p.appendChild(document.createTextNode(sub.suffix));
+        d.appendChild(p);
+      });
+      return d;
+    }
+
+    // === HELPERS ===
+    function arraysEqual(a,b){ if(!Array.isArray(a)||!Array.isArray(b))return false; if(a.length!==b.length)return false; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return false; return true; }
+
+    function getUserAnswer(q) {
+      if (type1Data[q]) {
+        const inputs = Array.from(document.querySelectorAll(`input[name="q${q}"]:checked`));
+        const sel = inputs.map(i => +i.value);
+        return sel.sort((x,y)=>x-y); // sort for multi
+      } else if (type2Data[q]) {
+        const cfg = type2Data[q];
+        return cfg.statements.map((_,i) => {
+          const r = document.querySelector(`input[name="q${q}-${i}"]:checked`);
+          return r ? +r.value : null; // 0=No,1=Yes
+        });
+      } else if (type3Data[q]) {
+        return type3Data[q].statements.map((_,i) => {
+          const itm = document.getElementById(`q${q}-zone-${i}`).querySelector('.draggable-item');
+          return itm ? +itm.id.split('-').pop() : null;
+        });
+      } else if (type4Data[q]) {
+        return type4Data[q].subs.map((_,i) => {
+          const sel = document.querySelector(`select[name="q${q}-${i}"]`);
+          return sel ? (sel.value===''?null:+sel.value) : null;
+        });
+      }
+      return [];
+    }
+
+    // === RENDER ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const host = document.getElementById('questionsContainer');
+      for (let q = 1; q <= 42; q++) {
+        let node;
+        if      (type1Data[q]) node = buildType1(q);
+        else if (type2Data[q]) node = buildType2(q);
+        else if (type3Data[q]) node = buildType3(q);
+        else if (type4Data[q]) node = buildType4(q);
+        else                   node = buildEmpty(q);
+        node.id = `question-${q}`;
+        host.appendChild(node);
+      }
+
+      // Timer
+let sec = 50 * 60;
+const tEl = document.getElementById('timer');
+const timerInterval = setInterval(() => {
+  const m = Math.floor(sec/60), s = String(sec%60).padStart(2,'0');
+  tEl.textContent = `Submitting in ${m}:${s}`;
+  sec--;
+
+  if (sec < 0) {
+    clearInterval(timerInterval);
+    // declanșează click pe butonul de submit
+    document.getElementById('submitBtn').click();
+
+    // popup + redirect
+    setTimeout(() => {
+      if (confirm("Timpul a expirat!\nVezi scorul și codul răspunsurilor?\nApasă OK pentru a merge la select.html")) {
+        window.location.href = "select.html";
+      }
+    }, 300);
+  }
+}, 1000);
+
+
+      // Submit
+      document.getElementById('submitBtn').addEventListener('click', () => {
+        let correctCount = 0;
+        const userKey = [];
+
+        for (let q = 1; q <= 42; q++) {
+          const ans = getUserAnswer(q);
+          userKey.push(ans);
+          const ok = arraysEqual(ans, answerKey[q-1]);
+          const el = document.getElementById(`question-${q}`);
+          el.classList.remove('correct-bg','incorrect-bg');
+          if (ok) { el.classList.add('correct-bg'); correctCount++; }
+          else    { el.classList.add('incorrect-bg'); }
+
+          // show correct code under the question
+          let codeEl = el.querySelector('.correct-code');
+          if (!codeEl) {
+            codeEl = document.createElement('div');
+            codeEl.className = 'correct-code';
+            el.appendChild(codeEl);
+          }
+          codeEl.textContent = `Correct code: ${JSON.stringify(answerKey[q-1])}`;
+        }
+
+        const points = Math.round((correctCount/42)*1000);
+        const result = document.getElementById('resultContainer');
+        result.innerHTML = `<h3>You scored ${points} points</h3><p>Your answer code:</p><pre>${JSON.stringify(userKey)}</pre>`;
+      });
+    });
+  </script>
+</body>
+</html>

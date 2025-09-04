@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TEST 4 DCM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Reset and base styles */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f5f5f5 100%);
+      min-height: 100vh;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #22223b;
+      padding: 0;
+      margin: 0;
+      letter-spacing: 0.01em;
+      font-size: 1.08rem;
+      background-attachment: fixed;
+    }
+    .container {
+      max-width: 980px;
+      margin: 40px auto 40px auto;
+      background: rgba(255,255,255,0.98);
+      padding: 32px 28px 32px 28px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(30,41,59,0.13), 0 1.5px 6px rgba(30,41,59,0.06);
+      border: 1.5px solid #e0e7ff;
+      position: relative;
+      min-height: 80vh;
+    }
+    .timer {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  background: linear-gradient(90deg, #f59e0b 60%, #fbbf24 100%);
+  color: #22223b;
+  font-weight: bold;
+  text-align: center;
+  padding: 14px 0;
+  border-radius: 0 0 10px 10px; /* colțuri doar jos, ca să arate mai natural */
+  margin-bottom: 28px;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.08);
+  border: 1.5px solid #fbbf24;
+  text-shadow: 0 1px 0 #fff8;
+}
+
+    .question {
+      border: 1.5px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 22px 20px 18px 20px;
+      margin-bottom: 28px;
+      background: linear-gradient(120deg, #f3f4f6 80%, #e0e7ff 100%);
+      box-shadow: 0 2px 8px rgba(59,130,246,0.06);
+      transition: background-color .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .question:hover {
+      background: linear-gradient(120deg, #e0e7ff 80%, #f3f4f6 100%);
+      box-shadow: 0 4px 16px rgba(59,130,246,0.10);
+      border-color: #6366f1;
+    }
+    .correct-bg {
+      background: linear-gradient(90deg, #e6ffed 80%, #bbf7d0 100%) !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 2px 12px rgba(34,197,94,0.09);
+      animation: correctPulse 0.7s;
+    }
+    .incorrect-bg {
+      background: linear-gradient(90deg, #ffe6e6 80%, #fecaca 100%) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 2px 12px rgba(239,68,68,0.09);
+      animation: incorrectPulse 0.7s;
+    }
+    @keyframes correctPulse {
+      0% { box-shadow: 0 0 0 0 #22c55e44; }
+      70% { box-shadow: 0 0 0 10px #22c55e22; }
+      100% { box-shadow: 0 2px 12px rgba(34,197,94,0.09);}
+    }
+    @keyframes incorrectPulse {
+      0% { box-shadow: 0 0 0 0 #ef444444; }
+      70% { box-shadow: 0 0 0 10px #ef444422; }
+      100% { box-shadow: 0 2px 12px rgba(239,68,68,0.09);}
+    }
+    .header {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 1.18rem;
+      color: #3730a3;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    .subtext {
+      margin: 0 0 14px 0;
+      color: #374151;
+      font-size: 1.01rem;
+      font-style: italic;
+      opacity: 0.92;
+    }
+    .options {
+      margin-left: 24px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+    }
+    .options label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 1.04rem;
+      padding: 4px 0 4px 0;
+      transition: background 0.2s;
+      border-radius: 6px;
+      gap: 8px;
+    }
+    .options label:hover {
+      background: #e0e7ff;
+    }
+    .options input[type="radio"],
+    .options input[type="checkbox"] {
+      accent-color: #6366f1;
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      transition: accent-color 0.2s;
+    }
+    .statement {
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 1.07rem;
+      letter-spacing: 0.01em;
+    }
+    .pool {
+      background: linear-gradient(90deg, #eef 80%, #dbeafe 100%);
+      padding: 10px 8px 10px 8px;
+      border: 1.5px solid #818cf8;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      min-height: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    .draggable-item {
+      display: inline-block;
+      background: linear-gradient(90deg, #2563eb 80%, #60a5fa 100%);
+      color: #fff;
+      padding: 6px 14px;
+      margin: 4px 6px 4px 0;
+      border-radius: 8px;
+      cursor: grab;
+      font-weight: 500;
+      font-size: 1.01rem;
+      box-shadow: 0 2px 8px #2563eb22;
+      border: 1.5px solid #1e40af;
+      transition: background 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .draggable-item:active {
+      background: #1e40af;
+      box-shadow: 0 2px 12px #1e40af33;
+    }
+    .drop-zone {
+      min-height: 48px;
+      padding: 12px 10px;
+      margin: 10px 0 10px 0;
+      border: 2.5px dashed #cbd5e1;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-size: 1.04rem;
+      color: #334155;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .drop-zone.dragover {
+      background: #e0e7ff;
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+    }
+    select {
+      margin-left: 10px;
+      padding: 6px 16px 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 1.04rem;
+      background: #f3f4f6;
+      color: #22223b;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      min-width: 90px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+      background: #e0e7ff;
+    }
+    #submitBtn {
+      display: block;
+      margin: 32px auto 0 auto;
+      padding: 16px 36px;
+      font-size: 1.13rem;
+      color: #fff;
+      background: linear-gradient(90deg, #2563eb 80%, #6366f1 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      box-shadow: 0 2px 12px #2563eb22;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      outline: none;
+    }
+    #submitBtn:hover, #submitBtn:focus {
+      background: linear-gradient(90deg, #6366f1 80%, #2563eb 100%);
+      box-shadow: 0 4px 18px #6366f122;
+      transform: translateY(-2px) scale(1.03);
+    }
+    #resultContainer {
+      text-align: center;
+      margin-top: 32px;
+      padding: 18px 0 0 0;
+      font-size: 1.15rem;
+      color: #1e293b;
+      background: linear-gradient(90deg, #e0e7ff 80%, #f3f4f6 100%);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #818cf822;
+      min-height: 60px;
+    }
+    #resultContainer h3 {
+      color: #2563eb;
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+      font-weight: 800;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    pre {
+      text-align: left;
+      background: #f3f4f6;
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: inline-block;
+      overflow-x: auto;
+      font-size: 0.97rem;
+      color: #334155;
+      margin-top: 10px;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1.5px solid #e0e7ff;
+    }
+    .correct-code {
+      font-size: 0.98rem;
+      font-style: italic;
+      margin-top: 10px;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: inline-block;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1px solid #e0e7ff;
+    }
+    /* Responsive styles */
+    @media (max-width: 700px) {
+      .container {
+        padding: 10px 2vw 10px 2vw;
+        border-radius: 8px;
+      }
+      .question {
+        padding: 12px 6px 10px 6px;
+        border-radius: 8px;
+      }
+      .header {
+        font-size: 1.05rem;
+      }
+      #submitBtn {
+        padding: 12px 18px;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+      .pool, .drop-zone {
+        font-size: 0.98rem;
+        min-height: 36px;
+        border-radius: 6px;
+      }
+      select {
+        font-size: 0.98rem;
+        border-radius: 6px;
+      }
+    }
+    /* Custom scrollbar for pool and pre */
+    .pool, pre {
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 #e0e7ff;
+    }
+    .pool::-webkit-scrollbar, pre::-webkit-scrollbar {
+      height: 8px;
+      background: #e0e7ff;
+      border-radius: 8px;
+    }
+    .pool::-webkit-scrollbar-thumb, pre::-webkit-scrollbar-thumb {
+      background: #6366f1;
+      border-radius: 8px;
+    }
+    /* Subtle fade-in animation for questions */
+    .question {
+      opacity: 0;
+      animation: fadeInQ 0.7s forwards;
+    }
+    .question:nth-child(1) { animation-delay: 0.05s; }
+    .question:nth-child(2) { animation-delay: 0.10s; }
+    .question:nth-child(3) { animation-delay: 0.15s; }
+    .question:nth-child(4) { animation-delay: 0.20s; }
+    .question:nth-child(5) { animation-delay: 0.25s; }
+    .question:nth-child(6) { animation-delay: 0.30s; }
+    .question:nth-child(7) { animation-delay: 0.35s; }
+    .question:nth-child(8) { animation-delay: 0.40s; }
+    .question:nth-child(9) { animation-delay: 0.45s; }
+    .question:nth-child(10) { animation-delay: 0.50s; }
+    @keyframes fadeInQ {
+      to { opacity: 1; }
+    }
+    /* Miscellaneous */
+    ::selection {
+      background: #6366f1;
+      color: #fff;
+    }
+    input:focus, button:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="timer" id="timer">Submitting in 50:00</div>
+    <form id="testForm" onsubmit="return false">
+      <div id="questionsContainer"></div>
+      <button type="button" id="submitBtn">Submit</button>
+    </form>
+    <div id="resultContainer"></div>
+  </div>
+
+  <script>
+    // Block access if not logged in
+  if(sessionStorage.getItem('loggedIn') !== 'true'){
+    alert('Please login first!');
+    window.location.href = 'index.html'; // redirect to login page
+  }
+    // === YOUR ANSWER KEY (source of truth) ===
+    const answerKey = [
+     [0,3,1],[3],[0,3],[3],[1],[0],[2],[1],[0,1,1],[3],
+[3],[0,1],[1,0,1],[2,3,1,0],[1],[0,2],[1],[0,0,1],[1],[2],
+[0,0,1],[1,1],[0,2],[0],[0],[1,1,0],[3],[0],[0,0,1],[2],
+[1,1,0],[2],[0,2,1,4,3],[3,2,0,1],[0,3,4,2],[1,3],[3],[0],[0,2],[3],
+[2],[0,1]
+
+    ];
+
+    // === DATASETS (from your original) ===
+    const type1Data = {
+      2: { prompt:["A real estate business is looking to implement a BYOD policy for personal mobile devices. Which type of system can help enforce that policy?"], options:["VPN","SMB","SIEM","MDM"], correct:[3], multi:true },
+3: { prompt:["A new technician wants to be able to manage a new printer someone else installed in a business.","What should the network administrator do so that the technician can manage the printer? (Choose two)"], options:["Assign the technician the Manage Printers permission","Add the technician to the Administrators group for the network on which the printer resides","Assign the technician the Print permission","Assign the technician the Manage Documents permission"], correct:[0,3], multi:true },
+4: { prompt:["You are reorganizing the drive on your computer.","You move several files to a new folder located on the same partition. When you move the files to the new folder, what happens to their permissions?"], options:["All permissions are lost","The source and destination permissions are combined","The destination folder permissions are inherited","The permissions on the files are retained"], correct:[3], multi:true },
+5: { prompt:["A sales team often works in remote areas and needs to work on files even when not connected to the Internet.","Which cloud feature enables the sales team to fulfill this need?"], options:["Encryption","Offline file synchronization","Blob storage","Offline backups"], correct:[1], multi:true },
+6: { prompt:["What would be the best way to access a commonly used network folder or application from the desktop?"], options:["Create a shortcut on the desktop","Drag the resource from its original location to the desktop","Create a shortcut in the Documents folder","Create a shortcut in the Start Menu"], correct:[0], multi:true },
+7: { prompt:["A consulting firm wants to ensure that non-essential files are purged after 90 days of being on a server, but essential files stay on the server for up to seven years.","Which type of policy should the consulting firm build to define these and similar rules for accessing historical data?"], options:["MOU","Remote wipe","Retention policy","AUP"], correct:[2], multi:true },
+8: { prompt:["You work for a computer support company that just acquired a contract to provide high-security services.","You have been assigned to a team who will provide these services to the client and have given a smart card. What is the purpose of a smart card?"], options:["To decrypt data","Authentication","Portable storage","To encrypt data"], correct:[1], multi:true },
+10: { prompt:["An administrator wants to make sure software updates and patches are applied as soon as possible on apps they support in a business.","Where are most updates for apps found?"], options:["Windows Update","Start Menu","Device Manager","Within the apps themselves"], correct:[3], multi:true },
+11: { prompt:["A user needs to be able to access a network folder frequently.","Which methods of accessing the folder would be the easiest for the user?"], options:["Copy the folder contents to drive C:","Add the folder to the Start Menu","Create a Workplace Join for that folder","Map a drive to that folder"], correct:[3], multi:true },
+12: { prompt:["A manufacturing company is trying to improve its overall security posture.","As part of that task, in what situations would social engineering training be warranted? (Choose two)"], options:["Employees are clicking on emails asking for personal information","Employees are divulging information to people acting as help desk employees","Employees forgetting their ID badges","Employees are non-participants in online meetings"], correct:[0,1], multi:true },
+15: { prompt:["A new support person is learning about tools used to troubleshoot Windows.","Which Windows tool is used to identify problems with hardware devices inside or attached to devices?"], options:["Program Compatibility Troubleshooter","Device Manager","Task Manager","Performance Monitor"], correct:[1], multi:true },
+16: { prompt:["Which types of updates are found in the Optional Updates area on a Windows device? (Choose two)"], options:["Windows updates","Security updates","Driver updates","Firmware updates"], correct:[0,2], multi:true },
+17: { prompt:["Which service hosts user accounts for Microsoft cloud offerings?"], options:["Azure IAM","Azure Active Directory","Active Directory Domain Services (AD DS)","Authentication Services"], correct:[1], multi:true },
+19: { prompt:["A technician is looking for a cable which supports both video and digital audio output and is used for gaming consoles.","Which connection type supports both video and digital audio output?"], options:["DVI","HDMI","3.5mm AUDIO","VGA"], correct:[1], multi:true },
+20: { prompt:["A business working on contracts wants to store and possibly restore multiple versions of contract files.","Which Windows feature allows one to backup multiple versions of files, with the flexibility of restoring a version backed up at a particular date and time?"], options:["Recycle Bin","File Recovery","File History","System Restore"], correct:[2], multi:true },
+23: { prompt:["In which areas of Windows will an administrator find the ability to repair or reinstall a desktop application? (Choose two)"], options:["Control Panel","Windows Update","Apps & Features","Start Menu"], correct:[0,2], multi:true },
+24: { prompt:["Which Windows feature is used to update drivers or rollback drivers on hardware devices to previous versions?"], options:["Device Manager","Windows Update","Microsoft Store","Apps and Features"], correct:[0], multi:true },
+25: { prompt:["A laptop is not recognizing an external hard drive that has been plugged into it.","Which Windows tool should an administrator check first to see if the disk is being recognized?"], options:["Disk Management","Device Manager","Computer Management","Services"], correct:[0], multi:true },
+27: { prompt:["You have been asked to explain the difference between a local account and a Microsoft account.","Which of these options best describes a Microsoft account?"], options:["A Microsoft account works without the Internet.","A Microsoft account is a subscription-based account.","A Microsoft account requires a VPN.","A Microsoft account is a cloud account."], correct:[3], multi:true },
+28: { prompt:["A Bluetooth keyboard is having intermittent connectivity issues with its parent device.","The further the keyboard moves away from the device, the more issues it has. The closer the keyboard is to the device, the fewer issues it has. What should the user check for first to troubleshoot the issue?"], options:["Change the battery on the keyboard","Reconnect the device via Bluetooth","Reinstall the keyboard drivers","Disable and enable Bluetooth on the host device"], correct:[0], multi:true },
+30: { prompt:["To accommodate a user who has difficulty hearing, the computer support technician wants to customize the Windows sound settings and show audio alerts visually.","Click the Windows setting category that will allow customization of the Audio Accessibility settings."], Image: '<img src="q30_t4.PNG" alt="Q30 Image" style="max-width:300px;display:block;margin-bottom:10px;">', options:["Bluetooth and Devices","Time & Language","Accessibility","Windows Update"], correct:[2], multi:true },
+32: { prompt:["If a 32-bit software application is installed on a 64-bit Windows operating system, where is it stored?"], options:["Documents folder","Program Files folder","Program Files (x86) folder","AppData folder"], correct:[2], multi:true },
+36: { prompt:["A person is suspecting bad sectors on a magnetic hard disk.","What are ways in which that disk can be scanned for errors? (Choose two)"], options:["Run Optimize on the Tools tab under Properties of a hard drive","Run Error Checking on the Tools tab under Properties of a hard drive","Run SFC in a command prompt","Run chkdsk in a command prompt"], correct:[1,3], multi:true },
+37: { prompt:["When a user logs onto a network and multiple group policies are applied, which policy takes precedence by being applied last?"], options:["Local Group Policy","Site Group Policy","Domain Group Policy","Organizational Unit (OU) Group Policy"], correct:[3], multi:true },
+38: { prompt:["A user just installed a Windows update to be able to download and install a new app from the Microsoft Store, but the person cannot install the app.","What should be done next to attempt to rectify the situation?"], options:["Reboot the device","Check to see if the app is blocked from the region in which the device is present","Check Family settings to see if the settings are hiding the app","Check to see if the app is compatible with the device"], correct:[0], multi:true },
+39: { prompt:["A technician needs to reconfigure drivers on an external scanner.","What should the technician do to reconfigure the scanner? (Choose two)"], options:["Uninstall and reinstall the scanner","Download the latest drivers from Device Manager","Download the latest drivers from the manufacturer's website","Use Device Manager to update the drivers on the device"], correct:[0,2], multi:true },
+40: { prompt:["An employee travels between home and office with a laptop computer.","For security reasons, the office uses a high-speed Ethernet network, not wireless. Today, the employee is working in the office and is unable to see the office network login screen. Employees in neighboring offices report no problems. Which would be the first step to troubleshoot this issue?"], options:["Change the employee's password","Check that the wireless card has an IP address","Check that DHCP is enabled","Check that the Ethernet cable is connected properly"], correct:[3], multi:true },
+41: { prompt:["Which Windows authentication technology can grant temporary administrative permissions to standard user accounts for the purpose of changing Windows settings or installing apps?"], options:["Microsoft Authenticator","Azure Active Directory (AD)","User Account Control (UAC)","Multi-factor Authentication (MFA)"], correct:[2], multi:true },
+      };
+
+    const type2Data = {
+      9: { prompt:"For each of the following statements regarding types of networks, select Yes if the statement is true and No if it is false.", statements:["An extranet allows customers, suppliers, and business partners to gain full access to an organization's internal resources.","An intranet is strictly internal and confidential to the organization, and not connected to the Internet directly.","The internet is a widely used example of a public network."], correct:['no','yes','yes'] },
+13: { prompt:"For each of the following statements, select Yes if the statement is true and No if the statement is false.", statements:["For Group Policy, OU settings override domain settings.","Group Policy does not override a local system policy.","Group Policy provides central management of user and computer settings."], correct:['yes','no','yes'] },
+18: { prompt:"For each accessibility setting statement, select Yes if the statement is true and No if the statement is false.", statements:["Mouse settings are the same for every Windows device.","Speech recognition can help those with hearing impairments.","An on-screen keyboard helps those with mobility issues."], correct:['no','no','yes'] },
+21: { prompt:"For each statement regarding UAC, select Yes if the statement is true and No if the statement is false.", statements:["The goal of UAC is to elevate a guest user to a standard user level.","UAC is used only when attempts are made to change Windows settings.","The default UAC setting is to notify a user when apps try to make changes to a computer."], correct:['no','no','yes'] },
+26: { prompt:"For each statement about installing Windows, select Yes if the statement is true and No if the statement is false.", statements:["Microsoft Windows supports multiple languages, but may require you to download a language pack.","The installation process prompts you to set the current time zone.","An Upgrade installation is the same as a Custom installation."], correct:['yes','yes','no'] },
+29: { prompt:"For each of the following statements regarding desktop settings, select Yes if the statement is true or No if the statement is false.", statements:["Windows will not allow users to customize icons that appear in the Start menu.","Windows allows users to take panoramic photos using any hardware.","The minus symbol on a Window minimizes a window to the taskbar."], correct:['no','no','yes'] },
+31: { prompt:"For each of the following statements about the Disk Management tool, select Yes if the statement is true or No if it is false.", statements:["The Disk Management tool can change a drive letter.","The Disk Management tool can shrink a basic volume.","The Disk Management tool can create a restore point."], correct:['yes','yes','no'] },
+
+    };
+
+    const type3Data = {
+      1:  {
+        prompt:[
+          "Match each definition with the corresponding type of malware.To answer, drag the appropriate definition from the column on the left to its corresponding type on the right. Each malware type may be used once, more than once, or not at all."
+        ],
+        statements:[
+          "Adware:",
+          "Virus",
+          "Trojan Horse"
+        ],
+        items:["Displays unwanted commercials and product promotions","Malicious code that masquerades as a desirable application","Harmless code added to a file","Infect a computer when an executable file is initiated by a user"],
+        correct:[0,3,1]
+      },
+      14: {
+        prompt:[
+          "Drag each Microsoft Cloud Service from the column on the left to the matching definition on the right. Each Microsoft Cloud Service may be used once, more than once, or not at all."
+        ],
+        statements:[
+          ": Accommodates high-workload applications, virtual machines, and access from a variety of platforms",
+          ": An intranet-based collaboration site to where files and folders can be stored and shared",
+          " : A collaboration tool used for live chat, virtual meetings, and file sharing",
+          " : Similar to traditional file storage, but in the cloud"
+        ],
+        items:[" OneDrive","Teams","Azure Storage", "SharePoint"],
+        correct:[2,3,1,0]
+      },
+      33: {
+        prompt:[
+          "Using drag and drop, match each connection type in the image below with its name on the right."
+        ],
+        Image: "<img src='q33_t4.PNG' alt='Q33 Image' style='max-width:300px;display:block;margin-bottom:10px;'>",
+        statements:[
+          "A:",
+          "B:",
+          "C:",
+          "D:",
+          "E:"
+        ],
+        items:["Audio","HDMI","Ethernet","USB Type-C", "USB"],
+        correct:[0,2,1,4,3]
+      },
+      34: {
+        prompt:[
+          "Using drag and drop, match each backup type from the list on the left to its description on the right."
+        ],
+        statements:[
+          " A backup of all data selected on a drive, usually done weekly",
+          "Only copies data created or changed since the last backup",
+          " Only copies data created or changed since the initial backup",
+          "An exact copy of its source and updates when its source is updated."
+        ],
+        items:[" Differential","Mirror","Incremental", "Full"],
+        correct:[3,2,0,1]
+      },
+      35: {
+        prompt:[
+          "Using drag and drop, match each biometric method from the list on the left to its primary disadvantage on the right."
+        ],
+        statements:[
+          "Can be replicated, also cuts or swelling can affect accuracy.",
+          "Newer technology has poor accuracy and it's expensive.",
+          "Lightning or expressions changes can affect detection.",
+          "Respiratory illness or background noise can affect accuracy."
+        ],
+        items:[" Fingerprint Scanning","Signature Verification","Voice Recognition", "Iris (retina) Scanning", "Facial Recognition"],
+        correct:[0,3,4,2]
+      }
+    };
+
+    const type4Data = {
+      22: {
+        intro:"For each situation, use the dropdown lists to indicate which type of wipe is taking place on a device.",
+        subs:[
+          { text:"A phone has its business data deleted but the personal data is still on the phone.", options:["Partial wipe","Account only Remote wipe","Business wipe"], correct:"Account only Remote wipe" },
+          { text:"A mobile device is reset to its factory settings.", options:["Business wipe","Full wipe", "Account only Remote wipe"], correct:"Full wipe" }
+        ]
+      },
+      42: {
+        intro:"A new technician is learning the distinction between file permissions and share permissions. Using the dropdown lists, identify each set of permissions as either file permissions or share permissions.",
+        subs:[
+          { text:"Full Control, Modify, and Read & Execute are", options:["file","share"], suffix:"  permissions.", correct:"file" },
+          { text:"Read/Write and Owner are ", options:["file","share"], suffix:"  permissions.", correct:"share" }
+        ]
+      }
+    };
+
+    // === BUILDERS ===
+    function buildEmpty(q) {
+      const d = document.createElement('div');
+      d.className = 'question';
+      const p = document.createElement('p');
+      p.className = 'header';
+      p.textContent = `Q${q}.`;
+      d.appendChild(p);
+      return d;
+    }
+
+    function buildType1(q) {
+      const cfg = type1Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((txt,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${txt}` : txt;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      // Render image if present (after prompt)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+      const opts = document.createElement('div');
+      opts.className = 'options';
+      cfg.options.forEach((opt,i) => {
+        const lbl = document.createElement('label');
+        const inp = document.createElement('input');
+        inp.type = cfg.multi ? 'checkbox' : 'radio';
+        inp.name = `q${q}`;
+        inp.value = i;
+        lbl.appendChild(inp);
+        lbl.appendChild(document.createTextNode(opt));
+        opts.appendChild(lbl);
+      });
+      d.appendChild(opts);
+      return d;
+    }
+
+    function buildType2(q) {
+      const cfg = type2Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.prompt}`;
+      d.appendChild(h);
+      cfg.statements.forEach((stmt,i) => {
+        const block = document.createElement('div');
+        const sp = document.createElement('p');
+        sp.className = 'statement';
+        sp.textContent = `${i+1}. ${stmt}`;
+        block.appendChild(sp);
+        const opts = document.createElement('div');
+        opts.className = 'options';
+        // IMPORTANT: 0 = No, 1 = Yes
+        ['No','Yes'].forEach((label, idx) => {
+          const lbl = document.createElement('label');
+          const inp = document.createElement('input');
+          inp.type = 'radio';
+          inp.name = `q${q}-${i}`;
+          inp.value = idx; // 0 for No, 1 for Yes
+          lbl.appendChild(inp);
+          lbl.appendChild(document.createTextNode(label));
+          opts.appendChild(lbl);
+        });
+        block.appendChild(opts);
+        d.appendChild(block);
+      });
+      return d;
+    }
+
+    function buildType3(q) {
+      const cfg = type3Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((line,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${line}` : line;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      // Render image if present (after prompt)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+      const pool = document.createElement('div');
+      pool.className = 'pool';
+      cfg.items.forEach((it,i) => {
+        const itm = document.createElement('div');
+        itm.className = 'draggable-item';
+        itm.draggable = true;
+        itm.id = `q${q}-itm-${i}`;
+        itm.textContent = it;
+        pool.appendChild(itm);
+      });
+      d.appendChild(pool);
+      cfg.statements.forEach((stmt,i) => {
+        const zone = document.createElement('div');
+        zone.className = 'drop-zone';
+        zone.id = `q${q}-zone-${i}`;
+        zone.textContent = stmt;
+        d.appendChild(zone);
+      });
+      pool.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+      });
+      d.querySelectorAll('.drop-zone, .pool').forEach(z => {
+        z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('dragover'); });
+        z.addEventListener('dragleave', () => z.classList.remove('dragover'));
+        z.addEventListener('drop', e => {
+          e.preventDefault(); z.classList.remove('dragover');
+          const id = e.dataTransfer.getData('text/plain');
+          const dragged = document.getElementById(id);
+          if (dragged) z.appendChild(dragged);
+        });
+      });
+      return d;
+    }
+
+    function buildType4(q) {
+      const cfg = type4Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.intro}`;
+      d.appendChild(h);
+      // Render image if present (before subs)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+
+      cfg.subs.forEach((sub,i) => {
+        const p = document.createElement('p');
+        p.className = 'statement';
+        p.textContent = `${i+1}. ${sub.text} `;
+        const sel = document.createElement('select');
+        sel.name = `q${q}-${i}`;
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = 'Select';
+        sel.appendChild(empty);
+        sub.options.forEach((opt,idx) => {
+          const o = document.createElement('option');
+          o.value = idx; // index mapping for answer codes
+          o.textContent = opt.charAt(0).toUpperCase()+opt.slice(1);
+          sel.appendChild(o);
+        });
+        p.appendChild(sel);
+        if (sub.suffix) p.appendChild(document.createTextNode(sub.suffix));
+        d.appendChild(p);
+      });
+      return d;
+    }
+
+    // === HELPERS ===
+    function arraysEqual(a,b){ if(!Array.isArray(a)||!Array.isArray(b))return false; if(a.length!==b.length)return false; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return false; return true; }
+
+    function getUserAnswer(q) {
+      if (type1Data[q]) {
+        const inputs = Array.from(document.querySelectorAll(`input[name="q${q}"]:checked`));
+        const sel = inputs.map(i => +i.value);
+        return sel.sort((x,y)=>x-y); // sort for multi
+      } else if (type2Data[q]) {
+        const cfg = type2Data[q];
+        return cfg.statements.map((_,i) => {
+          const r = document.querySelector(`input[name="q${q}-${i}"]:checked`);
+          return r ? +r.value : null; // 0=No,1=Yes
+        });
+      } else if (type3Data[q]) {
+        return type3Data[q].statements.map((_,i) => {
+          const itm = document.getElementById(`q${q}-zone-${i}`).querySelector('.draggable-item');
+          return itm ? +itm.id.split('-').pop() : null;
+        });
+      } else if (type4Data[q]) {
+        return type4Data[q].subs.map((_,i) => {
+          const sel = document.querySelector(`select[name="q${q}-${i}"]`);
+          return sel ? (sel.value===''?null:+sel.value) : null;
+        });
+      }
+      return [];
+    }
+
+    // === RENDER ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const host = document.getElementById('questionsContainer');
+      for (let q = 1; q <= 42; q++) {
+        let node;
+        if      (type1Data[q]) node = buildType1(q);
+        else if (type2Data[q]) node = buildType2(q);
+        else if (type3Data[q]) node = buildType3(q);
+        else if (type4Data[q]) node = buildType4(q);
+        else                   node = buildEmpty(q);
+        node.id = `question-${q}`;
+        host.appendChild(node);
+      }
+
+      // Timer
+let sec = 50 * 60;
+const tEl = document.getElementById('timer');
+const timerInterval = setInterval(() => {
+  const m = Math.floor(sec/60), s = String(sec%60).padStart(2,'0');
+  tEl.textContent = `Submitting in ${m}:${s}`;
+  sec--;
+
+  if (sec < 0) {
+    clearInterval(timerInterval);
+    // declanșează click pe butonul de submit
+    document.getElementById('submitBtn').click();
+
+    // popup + redirect
+    setTimeout(() => {
+      if (confirm("Timpul a expirat!\nVezi scorul și codul răspunsurilor?\nApasă OK pentru a merge la selectarea altui test sau acelasi")) {
+        window.location.href = "select.html";
+      }
+    }, 300);
+  }
+}, 1000);
+      
+
+      // Submit
+      document.getElementById('submitBtn').addEventListener('click', () => {
+        let correctCount = 0;
+        const userKey = [];
+
+        for (let q = 1; q <= 42; q++) {
+          const ans = getUserAnswer(q);
+          userKey.push(ans);
+          const ok = arraysEqual(ans, answerKey[q-1]);
+          const el = document.getElementById(`question-${q}`);
+          el.classList.remove('correct-bg','incorrect-bg');
+          if (ok) { el.classList.add('correct-bg'); correctCount++; }
+          else    { el.classList.add('incorrect-bg'); }
+
+          // show correct code under the question
+          let codeEl = el.querySelector('.correct-code');
+          if (!codeEl) {
+            codeEl = document.createElement('div');
+            codeEl.className = 'correct-code';
+            el.appendChild(codeEl);
+          }
+          codeEl.textContent = `Correct code: ${JSON.stringify(answerKey[q-1])}`;
+        }
+
+        const points = Math.round((correctCount/42)*1000);
+        const result = document.getElementById('resultContainer');
+        result.innerHTML = `<h3>You scored ${points} points</h3><p>Your answer code:</p><pre>${JSON.stringify(userKey)}</pre>`;
+      });
+    });
+  </script>
+</body>
+</html>
+

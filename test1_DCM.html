@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TEST 1 DCM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Reset and base styles */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f5f5f5 100%);
+      min-height: 100vh;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #22223b;
+      padding: 0;
+      margin: 0;
+      letter-spacing: 0.01em;
+      font-size: 1.08rem;
+      background-attachment: fixed;
+    }
+    .container {
+      max-width: 980px;
+      margin: 40px auto 40px auto;
+      background: rgba(255,255,255,0.98);
+      padding: 32px 28px 32px 28px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(30,41,59,0.13), 0 1.5px 6px rgba(30,41,59,0.06);
+      border: 1.5px solid #e0e7ff;
+      position: relative;
+      min-height: 80vh;
+    }
+    .timer {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  background: linear-gradient(90deg, #f59e0b 60%, #fbbf24 100%);
+  color: #22223b;
+  font-weight: bold;
+  text-align: center;
+  padding: 14px 0;
+  border-radius: 0 0 10px 10px; /* colțuri doar jos, ca să arate mai natural */
+  margin-bottom: 28px;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.08);
+  border: 1.5px solid #fbbf24;
+  text-shadow: 0 1px 0 #fff8;
+}
+
+    .question {
+      border: 1.5px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 22px 20px 18px 20px;
+      margin-bottom: 28px;
+      background: linear-gradient(120deg, #f3f4f6 80%, #e0e7ff 100%);
+      box-shadow: 0 2px 8px rgba(59,130,246,0.06);
+      transition: background-color .3s, box-shadow .3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .question:hover {
+      background: linear-gradient(120deg, #e0e7ff 80%, #f3f4f6 100%);
+      box-shadow: 0 4px 16px rgba(59,130,246,0.10);
+      border-color: #6366f1;
+    }
+    .correct-bg {
+      background: linear-gradient(90deg, #e6ffed 80%, #bbf7d0 100%) !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 2px 12px rgba(34,197,94,0.09);
+      animation: correctPulse 0.7s;
+    }
+    .incorrect-bg {
+      background: linear-gradient(90deg, #ffe6e6 80%, #fecaca 100%) !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 2px 12px rgba(239,68,68,0.09);
+      animation: incorrectPulse 0.7s;
+    }
+    @keyframes correctPulse {
+      0% { box-shadow: 0 0 0 0 #22c55e44; }
+      70% { box-shadow: 0 0 0 10px #22c55e22; }
+      100% { box-shadow: 0 2px 12px rgba(34,197,94,0.09);}
+    }
+    @keyframes incorrectPulse {
+      0% { box-shadow: 0 0 0 0 #ef444444; }
+      70% { box-shadow: 0 0 0 10px #ef444422; }
+      100% { box-shadow: 0 2px 12px rgba(239,68,68,0.09);}
+    }
+    .header {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 1.18rem;
+      color: #3730a3;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    .subtext {
+      margin: 0 0 14px 0;
+      color: #374151;
+      font-size: 1.01rem;
+      font-style: italic;
+      opacity: 0.92;
+    }
+    .options {
+      margin-left: 24px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+    }
+    .options label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 1.04rem;
+      padding: 4px 0 4px 0;
+      transition: background 0.2s;
+      border-radius: 6px;
+      gap: 8px;
+    }
+    .options label:hover {
+      background: #e0e7ff;
+    }
+    .options input[type="radio"],
+    .options input[type="checkbox"] {
+      accent-color: #6366f1;
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      transition: accent-color 0.2s;
+    }
+    .statement {
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 1.07rem;
+      letter-spacing: 0.01em;
+    }
+    .pool {
+      background: linear-gradient(90deg, #eef 80%, #dbeafe 100%);
+      padding: 10px 8px 10px 8px;
+      border: 1.5px solid #818cf8;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      min-height: 48px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    .draggable-item {
+      display: inline-block;
+      background: linear-gradient(90deg, #2563eb 80%, #60a5fa 100%);
+      color: #fff;
+      padding: 6px 14px;
+      margin: 4px 6px 4px 0;
+      border-radius: 8px;
+      cursor: grab;
+      font-weight: 500;
+      font-size: 1.01rem;
+      box-shadow: 0 2px 8px #2563eb22;
+      border: 1.5px solid #1e40af;
+      transition: background 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .draggable-item:active {
+      background: #1e40af;
+      box-shadow: 0 2px 12px #1e40af33;
+    }
+    .drop-zone {
+      min-height: 48px;
+      padding: 12px 10px;
+      margin: 10px 0 10px 0;
+      border: 2.5px dashed #cbd5e1;
+      border-radius: 8px;
+      background: #f1f5f9;
+      font-size: 1.04rem;
+      color: #334155;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .drop-zone.dragover {
+      background: #e0e7ff;
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+    }
+    select {
+      margin-left: 10px;
+      padding: 6px 16px 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 1.04rem;
+      background: #f3f4f6;
+      color: #22223b;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      min-width: 90px;
+      box-shadow: 0 1px 4px #818cf822;
+    }
+    select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px #6366f122;
+      background: #e0e7ff;
+    }
+    #submitBtn {
+      display: block;
+      margin: 32px auto 0 auto;
+      padding: 16px 36px;
+      font-size: 1.13rem;
+      color: #fff;
+      background: linear-gradient(90deg, #2563eb 80%, #6366f1 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      box-shadow: 0 2px 12px #2563eb22;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      outline: none;
+    }
+    #submitBtn:hover, #submitBtn:focus {
+      background: linear-gradient(90deg, #6366f1 80%, #2563eb 100%);
+      box-shadow: 0 4px 18px #6366f122;
+      transform: translateY(-2px) scale(1.03);
+    }
+    #resultContainer {
+      text-align: center;
+      margin-top: 32px;
+      padding: 18px 0 0 0;
+      font-size: 1.15rem;
+      color: #1e293b;
+      background: linear-gradient(90deg, #e0e7ff 80%, #f3f4f6 100%);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #818cf822;
+      min-height: 60px;
+    }
+    #resultContainer h3 {
+      color: #2563eb;
+      font-size: 1.35rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+      font-weight: 800;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    pre {
+      text-align: left;
+      background: #f3f4f6;
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: inline-block;
+      overflow-x: auto;
+      font-size: 0.97rem;
+      color: #334155;
+      margin-top: 10px;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1.5px solid #e0e7ff;
+    }
+    .correct-code {
+      font-size: 0.98rem;
+      font-style: italic;
+      margin-top: 10px;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: inline-block;
+      box-shadow: 0 1px 4px #818cf822;
+      border: 1px solid #e0e7ff;
+    }
+    /* Responsive styles */
+    @media (max-width: 700px) {
+      .container {
+        padding: 10px 2vw 10px 2vw;
+        border-radius: 8px;
+      }
+      .question {
+        padding: 12px 6px 10px 6px;
+        border-radius: 8px;
+      }
+      .header {
+        font-size: 1.05rem;
+      }
+      #submitBtn {
+        padding: 12px 18px;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+      .pool, .drop-zone {
+        font-size: 0.98rem;
+        min-height: 36px;
+        border-radius: 6px;
+      }
+      select {
+        font-size: 0.98rem;
+        border-radius: 6px;
+      }
+    }
+    /* Custom scrollbar for pool and pre */
+    .pool, pre {
+      scrollbar-width: thin;
+      scrollbar-color: #6366f1 #e0e7ff;
+    }
+    .pool::-webkit-scrollbar, pre::-webkit-scrollbar {
+      height: 8px;
+      background: #e0e7ff;
+      border-radius: 8px;
+    }
+    .pool::-webkit-scrollbar-thumb, pre::-webkit-scrollbar-thumb {
+      background: #6366f1;
+      border-radius: 8px;
+    }
+    /* Subtle fade-in animation for questions */
+    .question {
+      opacity: 0;
+      animation: fadeInQ 0.7s forwards;
+    }
+    .question:nth-child(1) { animation-delay: 0.05s; }
+    .question:nth-child(2) { animation-delay: 0.10s; }
+    .question:nth-child(3) { animation-delay: 0.15s; }
+    .question:nth-child(4) { animation-delay: 0.20s; }
+    .question:nth-child(5) { animation-delay: 0.25s; }
+    .question:nth-child(6) { animation-delay: 0.30s; }
+    .question:nth-child(7) { animation-delay: 0.35s; }
+    .question:nth-child(8) { animation-delay: 0.40s; }
+    .question:nth-child(9) { animation-delay: 0.45s; }
+    .question:nth-child(10) { animation-delay: 0.50s; }
+    @keyframes fadeInQ {
+      to { opacity: 1; }
+    }
+    /* Miscellaneous */
+    ::selection {
+      background: #6366f1;
+      color: #fff;
+    }
+    input:focus, button:focus {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="timer" id="timer">Submitting in 50:00</div>
+    <form id="testForm" onsubmit="return false">
+      <div id="questionsContainer"></div>
+      <button type="button" id="submitBtn">Submit</button>
+    </form>
+    <div id="resultContainer"></div>
+  </div>
+  <script>
+    // Block access if not logged in
+    if(sessionStorage.getItem('loggedIn') !== 'true'){
+      alert('Please login first!');
+      window.location.href = 'index.html'; // redirect to login page
+    }
+    // === YOUR ANSWER KEY (source of truth) ===
+    const answerKey = [
+     [3],[0],[0,3],[2,4,5],[2,3],[0,1,2],[1,3],[1,1,0],[2],[2],
+     [0,2],[2],[2,0],[0],[1],[1],[1,1,0],[1,0,1],[1],[1],
+     [1,1,0],[3],[2],[0,1,2],[0,1,0],[1,1,0],[0],[2],[1,2],[0,1,2],
+     [3],[2],[0],[0],[1,2,0],[0],[2],[0,1,1],[1,1,0,0],[0,1,0,0],[0,2]
+    ];
+    // === DATASETS (from your original) ===
+    const type1Data = {
+      1:  { prompt:["A technician is setting up a laptop for someone who has trouble distinguishing reds from greens.","Which Accessibility setting helps people who struggle to see certain colors?"], options:["Magnifier","Colors","High Contrast","Color filters"], correct:[3], multi:false },
+      2:  { prompt:["You need to share a folder and make sure you can limit the number of users connected to the folder to five users at a time.","Which type of share should you set up?"], options:["Advanced","Public","Security","Basic"], correct:[3], multi:false },
+      3:  { prompt:["Which types of updates can be configured to occur automatically on most devices? (Choose two)"], options:["Application Software","Firmware","Hardware","Operating System"], correct:[0,3], multi:true },
+      4:  { prompt:["Which specific NTFS permissions are considered basic permissions? (Choose three)"], options:["Write attributes","Take ownership","Read","Read attributes","Full Control","Modify"], correct:[0,2,3], multi:true },
+      5:  { prompt:["A network administrator wants to ensure mobile device movement is tracked so that a device can be disabled if it is deemed to be outside travel boundaries set by the company.","What features need to be turned on so this tracking can take place? (Choose two)"], options:["Cellular (on either platform)","Wi-Fi (on either platform)","Location Services (on iOS)","Location (on Android)"], correct:[2,3], multi:true },
+      7:  { prompt:["When files are shared from a cloud server, which types of entities are granted permissions to those files? (Choose two)"], options:["Sites","Users","Domains","Groups"], correct:[0,1], multi:true },
+      9:  { prompt:["A person wants to see text in a larger font but only as the person is reading that specific text.","Which Accessibility feature should the person invoke to have this need fulfilled?"], options:["Font settings","Narrator","Magnifier","Text size"], correct:[2], multi:false },
+      10: { prompt:["In which action with files and folders are permissions retained as those files or folders are moved or copied to a new destination?" ], options:["Files and folders are copied to a new partition","Files and folders are moved to a new partition","Files and folders are moved within the same partition","Files and folders are copied within the same partition"], correct:[2], multi:false },
+      11: { prompt:["Two employees have older Android devices enrolled with an MDM at the employees’ workplace.","These employees try to connect the device one day and get told the device is no longer compatible with the MDM.","What has been done on the MDM to cause this message? (Choose two)"], options:["A policy has been defined","The device has gone through a full wipe","The devices have been determined to be non-compliant","The device has gone through a remote wipe"], correct:[0,2], multi:true },
+      12: { prompt:["A user recently updated a Windows laptop. The user doesn’t want to miss future important fixes or device drivers for Windows.","What should the user do?" ], options:["Manually update Windows every quarter","Upgrade Windows","Enable Automatic Updates","Check the internet every month for announcements about available updates"], correct:[2], multi:false },
+      14: { prompt:["A new cloud administrator learns that a virtual machine can be configured to increase or decrease its RAM dynamically based on workload demand.","Which cloud feature is this situation describing?" ], options:["Elasticity","Scalability","Reserved instance","Load balancing"], correct:[0], multi:false },
+      15: { prompt:["Which is an example of multi-factor authentication?" ], options:["Logging into a network with a username and password","Withdrawing money from an ATM using your card and PIN","Paying a bill over the telephone by providing your address and phone number","Sending a text message to subscribe to special discount notifications"], correct:[1], multi:false },
+      16: { prompt:["Which folder is the default location for 64-bit app installations?" ], options:["AppData","Program Files","Program Files(x86)","Microsoft Store"], correct:[1], multi:false },
+      19: { prompt:["Which policy document outlines what employees are allowed to view on the Internet from company devices?" ], options:["DRP","AUP","BCP","MOU"], correct:[1], multi:false },
+      20: { prompt:["Which permission elevation takes place during the use of UAC?" ], options:["Standard permissions to administrator accounts","Administrative permissions to standard accounts","Standard permissions to guest accounts","Backup operator permissions to standard accounts"], correct:[0], multi:false },
+      22: { prompt:["An employee brings a laptop in from home to connect to the corporate domain-based network.","The laptop cannot join a domain. The employee is running Windows Enterprise.","What is the most likely cause of the inability to join a domain?" ], options:["The user needs to be a member of the Domain Admins group","The laptop needs to be running Windows Pro","The user needs to have Domain join installed","The user needs the Create computer object permission in Active Directory"], correct:[1], multi:false },
+      23: { prompt:["A monitor is not displaying anything on a desktop device.","What should a technician do first to troubleshoot the situation?" ], options:["Connect to the computer remotely","Restart the computer","Make sure the monitor is on and connected properly to the computer","Plug in a different monitor"], correct:[2], multi:false },
+      27: { prompt:["Which power setting, when enabled, stores files in RAM while a laptop is inactive?" ], options:["Sleep mode","Shutdown mode","Hibernate mode","Standby mode"], correct:[0], multi:false },
+      28: { prompt:["Which of the following accessibility features in Windows will let a user press multiple key commands (such as Ctrl + S) one key at a time?" ], options:["Toggle Keys","On-Screen Keyboard","Sticky Keys","Filter Keys"], correct:[2], multi:false },
+      29: { prompt:["Which is the proper way to cleanly uninstall a software application from a Windows computer? (Choose two)" ], options:["Remove its associated registry settings","Select Uninstall after an app is selected from the Start menu","Right-click the software title in Apps & Features and select Uninstall","Delete its applications folder"], correct:[1,2], multi:true },
+      31: { prompt:["A computer support technician wants to enable Windows Defender on a new laptop.","Click the Windows setting category that will enable or disable Windows Defender." ], Image: '<img src="q31_t1.PNG" alt="Q31 Image" style="max-width:300px;display:block;margin-bottom:10px;">'  ,options:["System","Network and Internet","Accessibility","Privacy and Security"], correct:[3], multi:false },
+      32: { prompt:["Which mitigation method on attacks helps to mitigate possible physical attacks on a data server within a business’ premises?" ], options:["Moving the server offsite","Adding a firewall in front of the server","Locking a server in a room that requires authentication to enter","Adding a honeypot to the server"], correct:[2], multi:false },
+      33: { prompt:["For a mobile device to interact with an MDM, what needs to happen with the device?" ], options:["The device must enroll in the MDM","The device owner must agree to the MDM policy","The device needs the same operating system as that of the MDM","The MDM needs to approve a device request"], correct:[0], multi:false },
+      34: { prompt:["For a mobile device to enroll in an MDM server for management purposes, what needs to be installed on that mobile device?" ], options:["Agent","Microsoft Intune","Antivirus app","Tracking app"], correct:[0], multi:false },
+      36: { prompt:["What is the first step for troubleshooting issues on a computing device?" ], options:["Gathering information to describe the issue(s)","Knowing where to escalate the issue","Identifying troubleshooting tools","Research how to remedy issues"], correct:[0], multi:false },
+      37: { prompt:["A law office is noticing that documents are being deleted without going through a process to determine when it is safe to delete said documents.","What can be added to documents to ensure they are kept for a specified amount of time and then not deleted without a review process?" ], options:["Legal hold","Retention policy","Retention labels","Disposition review"], correct:[2], multi:false }
+    };
+    const type2Data = {
+      8:  { prompt:"For each of the following statements regarding Windows installations, select Yes if the statement is true and No if it is false.", statements:["An installation can be done through a network share.","The default time zone is the Pacific time zone.","A Microsoft account is required for a Windows installation."], correct:['yes','no','no'] },
+      17: { prompt:"For each statement regarding application installations and features, indicate Yes if the statement is true and No if the statement is false.", statements:["The Windows Features area is part of the Control Panel.","The Family options area is used to set screen time limits on devices.","Microsoft Store app updates must be done in the Apps & Features area."], correct:['yes','yes','no'] },
+      18: { prompt:"For each statement about troubleshooting headsets and microphones, select Yes if the statement is true and No if it is false.", statements:["On a system with multiple microphones, different apps can default to different microphones.","All apps on a system will default to using the same output for audio.","Headsets and microphones can be partially functional without having their respective drivers installed, but functionality will be limited."], correct:['yes','no','yes'] },
+      21: { prompt:"For each statement regarding operating system troubleshooting, select Yes if the statement is true and No if it is false.", statements:["Resetting an operating system preserves user files.","Safe Mode can be loaded with network connectivity.","To rollback an operating system to a state before an app caused instability, one should boot into Safe Mode."], correct:['yes','yes','no'] },
+      25: { prompt:"For each statement about configuring user account information in Windows, indicate Yes if the statement is true and No if it is false.", statements:["Local administrator accounts can make changes to any computer in a domain.","A Standard User account can be promoted to an Administrator account.","Only administrator accounts can install apps on a device."], correct:['no','yes','yes'] },
+      26: { prompt:"For each of the following statements, select Yes if the statement is true and No if it is false.", statements:["Windows allows a user to add a custom toolbar to the taskbar.","The x button on a window closes the window.","The square button on a window makes the window available only from the taskbar."], correct:['yes','yes','no'] },
+      38: { prompt:"A new administrator is learning about permissions and shares and the effect file movement has on permissions. For each statement regarding permissions and shares, indicate Yes if the statement is True and No if it is False.", statements:["Basic shares allow for custom permissions to users and groups.","Take Ownership is an advanced permission.","Files in public shares on a device are available to all accounts on that device."], correct:['no','yes','yes'] },
+      39: { prompt:"An employee, using an Ethernet connection to connect to the company network, is complaining that file transfers keep slowing down or getting interrupted. For each statement regarding this situation, indicate Yes if the hardware piece mentioned could be a source of the problem or No if it is not a possible source of the problem.", statements:["The Ethernet cable could be faulty and a new cable should be tried.","The port on the person's device or any port used in the connection to the network switch could be faulty.","The network switch is suffering intermittent power outages.","The network switch needs a driver update."], correct:['yes','yes','yes','no'] },
+      40: { prompt:"A portable camera uses a USB-C cable to connect to a device. A person connects a camera to a laptop, but the device cannot see the camera. The camera does not show in Device Manager. For each of the following actions, indicate Yes if it should be done next to troubleshoot the issue or No if it should not.", statements:["Update the driver for the camera","Try a different USB-C cable","Reboot the device","Get an USB-C to USB-A adapter"], correct:['yes','yes','yes','no'] }
+    };
+    const type3Data = {
+      6:  {
+        prompt:[
+          "Match each type of malware to its definition.",
+          "To answer, drag the appropriate malware type from the column on the left to its description on the right."
+        ],
+        statements:[
+          "Displays unwanted commercials and product promotions",
+          "Gathers personal information or tracks computer activity without consent",
+          "Self-replicates and exploits operating system vulnerabilities"
+        ],
+        items:["adware","spyware","worm"],
+        correct:[0,1,2]
+      },
+      24: {
+        prompt:[
+          "Match each installation type or setting to its description.",
+          "To answer, drag the appropriate term from the column on the left to its description on the right."
+        ],
+        statements:[
+          "Retains existing apps, files and Windows settings.",
+          "Formats the destination hard drive to perform a clean install.",
+          "The geographic location where the target computer resides."
+        ],
+        items:["upgrade installation","custom installation","time zone"],
+        correct:[0,1,2]
+      },
+      30: {
+        prompt:[
+          "Match each cable type to its description.",
+          "To answer, drag the appropriate cable type from the column on the left to its description on the right."
+        ],
+        statements:[
+          "A cable used for high-quality data transmission for both video and audio and is often used with tablets and portable cameras.",
+          "Connects a desktop computer to a monitor",
+          "Allows for multiple devices to connect to a single port."
+        ],
+        items:["mini-HDMI","VGA","DisplayPort"],
+        correct:[0,1,2]
+      },
+      35: {
+        prompt:[
+          "Match each troubleshooting resource to its purpose.",
+          "To answer, drag the appropriate resource from the column on the left to its description on the right."
+        ],
+        statements:[
+          "Manufacturer's website",
+          "Web search",
+          "Device Manager"
+        ],
+        items:[
+          "Check the connection of the scanner device",
+          "A new driver is needed",
+          "More information on the problem is needed"
+          
+        ],
+        correct:[0,1,2]
+      }
+    };
+    const type4Data = {
+      13: {
+        intro:"An employee joining a new network is having trouble connecting to the internet and to other devices in the network. Upon running the ipconfig command on the employee's device, the IP address returned is 169.254.22.23. Using the dropdown arrows, indicate the causes of the network connectivity issue.",
+        subs:[
+          { text:"What type of IP address is the employee receiving?", options:["Dynamic","Static","APIPA"], correct:"APIPA" },
+          { text:"Which server is not being reached properly as a result of the indication of this type of IP address?", options:["DHCP","Web","DNS"], correct:"DHCP" }
+        ]
+      },
+      41: {
+        intro:"A user is creating a backup strategy. The user wants to conserve storage space but wants to restore quickly in case of data loss. With these goals in mind, which types of backups should the user choose to include in the backup strategy?",
+        subs:[
+          { text:"On a weekly basis, the user should perform a", options:["full","incremental","differential","mirror"], suffix:" backup.", correct:"full" },
+          { text:"Each night, the user should perform a", options:["full","incremental","differential","mirror"], suffix:" backup.", correct:"differential" }
+        ]
+      }
+    };
+    // === BUILDERS ===
+    function buildEmpty(q) {
+      const d = document.createElement('div');
+      d.className = 'question';
+      const p = document.createElement('p');
+      p.className = 'header';
+      p.textContent = `Q${q}.`;
+      d.appendChild(p);
+      return d;
+    }
+    function buildType1(q) {
+      const cfg = type1Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((txt,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${txt}` : txt;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      // Render image if present (after prompt)
+      if (cfg.Image) {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.innerHTML = cfg.Image;
+        d.appendChild(imgWrapper);
+      }
+      const opts = document.createElement('div');
+      opts.className = 'options';
+      cfg.options.forEach((opt,i) => {
+        const lbl = document.createElement('label');
+        const inp = document.createElement('input');
+        inp.type = cfg.multi ? 'checkbox' : 'radio';
+        inp.name = `q${q}`;
+        inp.value = i;
+        lbl.appendChild(inp);
+        lbl.appendChild(document.createTextNode(opt));
+        opts.appendChild(lbl);
+      });
+      d.appendChild(opts);
+      return d;
+    }
+
+    function buildType2(q) {
+      const cfg = type2Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.prompt}`;
+      d.appendChild(h);
+      cfg.statements.forEach((stmt,i) => {
+        const block = document.createElement('div');
+        const sp = document.createElement('p');
+        sp.className = 'statement';
+        sp.textContent = `${i+1}. ${stmt}`;
+        block.appendChild(sp);
+        const opts = document.createElement('div');
+        opts.className = 'options';
+        // IMPORTANT: 0 = No, 1 = Yes
+        ['No','Yes'].forEach((label, idx) => {
+          const lbl = document.createElement('label');
+          const inp = document.createElement('input');
+          inp.type = 'radio';
+          inp.name = `q${q}-${i}`;
+          inp.value = idx; // 0 for No, 1 for Yes
+          lbl.appendChild(inp);
+          lbl.appendChild(document.createTextNode(label));
+          opts.appendChild(lbl);
+        });
+        block.appendChild(opts);
+        d.appendChild(block);
+      });
+      return d;
+    }
+    function buildType3(q) {
+      const cfg = type3Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((line,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${line}` : line;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      const pool = document.createElement('div');
+      pool.className = 'pool';
+      cfg.items.forEach((it,i) => {
+        const itm = document.createElement('div');
+        itm.className = 'draggable-item';
+        itm.draggable = true;
+        itm.id = `q${q}-itm-${i}`;
+        itm.textContent = it;
+        pool.appendChild(itm);
+      });
+      d.appendChild(pool);
+      cfg.statements.forEach((stmt,i) => {
+        const zone = document.createElement('div');
+        zone.className = 'drop-zone';
+        zone.id = `q${q}-zone-${i}`;
+        zone.textContent = stmt;
+        d.appendChild(zone);
+      });
+      pool.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+      });
+      d.querySelectorAll('.drop-zone, .pool').forEach(z => {
+        const lbl = document.createElement('label');
+        const inp = document.createElement('input');
+        inp.type = cfg.multi ? 'checkbox' : 'radio';
+        inp.name = `q${q}`;
+        inp.value = i;
+        lbl.appendChild(inp);
+        lbl.appendChild(document.createTextNode(opt));
+        opts.appendChild(lbl);
+      });
+      d.appendChild(opts);
+      return d;
+    }
+    function buildType2(q) {
+      const cfg = type2Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.prompt}`;
+      d.appendChild(h);
+      cfg.statements.forEach((stmt,i) => {
+        const block = document.createElement('div');
+        const sp = document.createElement('p');
+        sp.className = 'statement';
+        sp.textContent = `${i+1}. ${stmt}`;
+        block.appendChild(sp);
+        const opts = document.createElement('div');
+        opts.className = 'options';
+        // IMPORTANT: 0 = No, 1 = Yes
+        ['No','Yes'].forEach((label, idx) => {
+          const lbl = document.createElement('label');
+          const inp = document.createElement('input');
+          inp.type = 'radio';
+          inp.name = `q${q}-${i}`;
+          inp.value = idx; // 0 for No, 1 for Yes
+          lbl.appendChild(inp);
+          lbl.appendChild(document.createTextNode(label));
+          opts.appendChild(lbl);
+        });
+        block.appendChild(opts);
+        d.appendChild(block);
+      });
+      return d;
+    }
+    function buildType3(q) {
+      const cfg = type3Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      cfg.prompt.forEach((line,i) => {
+        const p = document.createElement('p');
+        p.textContent = i===0 ? `Q${q}. ${line}` : line;
+        p.className = i===0 ? 'header' : 'subtext';
+        d.appendChild(p);
+      });
+      const pool = document.createElement('div');
+      pool.className = 'pool';
+      cfg.items.forEach((it,i) => {
+        const itm = document.createElement('div');
+        itm.className = 'draggable-item';
+        itm.draggable = true;
+        itm.id = `q${q}-itm-${i}`;
+        itm.textContent = it;
+        pool.appendChild(itm);
+      });
+      d.appendChild(pool);
+      cfg.statements.forEach((stmt,i) => {
+        const zone = document.createElement('div');
+        zone.className = 'drop-zone';
+        zone.id = `q${q}-zone-${i}`;
+        zone.textContent = stmt;
+        d.appendChild(zone);
+      });
+      pool.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.id);
+        });
+      });
+      d.querySelectorAll('.drop-zone, .pool').forEach(z => {
+        z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('dragover'); });
+        z.addEventListener('dragleave', () => z.classList.remove('dragover'));
+        z.addEventListener('drop', e => {
+          e.preventDefault(); z.classList.remove('dragover');
+          const id = e.dataTransfer.getData('text/plain');
+          const dragged = document.getElementById(id);
+          if (dragged) z.appendChild(dragged);
+        });
+      });
+      return d;
+    }
+    function buildType4(q) {
+      const cfg = type4Data[q];
+      const d = document.createElement('div');
+      d.className = 'question';
+      const h = document.createElement('p');
+      h.className = 'header';
+      h.textContent = `Q${q}. ${cfg.intro}`;
+      d.appendChild(h);
+      cfg.subs.forEach((sub,i) => {
+        const p = document.createElement('p');
+        p.className = 'statement';
+        p.textContent = `${i+1}. ${sub.text} `;
+        const sel = document.createElement('select');
+        sel.name = `q${q}-${i}`;
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = 'Select';
+        sel.appendChild(empty);
+        sub.options.forEach((opt,idx) => {
+          const o = document.createElement('option');
+          o.value = idx; // index mapping for answer codes
+          o.textContent = opt.charAt(0).toUpperCase()+opt.slice(1);
+          sel.appendChild(o);
+        });
+        p.appendChild(sel);
+        if (sub.suffix) p.appendChild(document.createTextNode(sub.suffix));
+        d.appendChild(p);
+      });
+      return d;
+    }
+    // === HELPERS ===
+    function arraysEqual(a,b){ if(!Array.isArray(a)||!Array.isArray(b))return false; if(a.length!==b.length)return false; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return false; return true; }
+    function getUserAnswer(q) {
+      if (type1Data[q]) {
+        const inputs = Array.from(document.querySelectorAll(`input[name="q${q}"]:checked`));
+        const sel = inputs.map(i => +i.value);
+        return sel.sort((x,y)=>x-y); // sort for multi
+      } else if (type2Data[q]) {
+        const cfg = type2Data[q];
+        return cfg.statements.map((_,i) => {
+          const r = document.querySelector(`input[name="q${q}-${i}"]:checked`);
+          return r ? +r.value : null; // 0=No,1=Yes
+        });
+      } else if (type3Data[q]) {
+        return type3Data[q].statements.map((_,i) => {
+          const itm = document.getElementById(`q${q}-zone-${i}`).querySelector('.draggable-item');
+          return itm ? +itm.id.split('-').pop() : null;
+        });
+      } else if (type4Data[q]) {
+        return type4Data[q].subs.map((_,i) => {
+          const sel = document.querySelector(`select[name="q${q}-${i}"]`);
+          return sel ? (sel.value===''?null:+sel.value) : null;
+        });
+      }
+      return [];
+    }
+    // === RENDER ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const host = document.getElementById('questionsContainer');
+      for (let q = 1; q <= 41; q++) {
+        let node;
+        if      (type1Data[q]) node = buildType1(q);
+        else if (type2Data[q]) node = buildType2(q);
+        else if (type3Data[q]) node = buildType3(q);
+        else if (type4Data[q]) node = buildType4(q);
+        else                   node = buildEmpty(q);
+        node.id = `question-${q}`;
+        host.appendChild(node);
+      }
+      // Timer
+let sec = 50 * 60;
+const tEl = document.getElementById('timer');
+const timerInterval = setInterval(() => {
+  const m = Math.floor(sec/60), s = String(sec%60).padStart(2,'0');
+  tEl.textContent = `Submitting in ${m}:${s}`;
+  sec--;
+
+  if (sec < 0) {
+    clearInterval(timerInterval);
+    // declanșează click pe butonul de submit
+    document.getElementById('submitBtn').click();
+
+    // popup + redirect
+    setTimeout(() => {
+      if (confirm("Timpul a expirat!\nVezi scorul și codul răspunsurilor?\nApasă OK pentru a merge la select.html")) {
+        window.location.href = "select.html";
+      }
+    }, 300);
+  }
+}, 1000);
+
+      // Submit
+      document.getElementById('submitBtn').addEventListener('click', () => {
+        let correctCount = 0;
+        const userKey = [];
+        for (let q = 1; q <= 41; q++) {
+          const ans = getUserAnswer(q);
+          userKey.push(ans);
+          const ok = arraysEqual(ans, answerKey[q-1]);
+          const el = document.getElementById(`question-${q}`);
+          el.classList.remove('correct-bg','incorrect-bg');
+          if (ok) { el.classList.add('correct-bg'); correctCount++; }
+          else    { el.classList.add('incorrect-bg'); }
+          // show correct code under the question
+          let codeEl = el.querySelector('.correct-code');
+          if (!codeEl) {
+            codeEl = document.createElement('div');
+            codeEl.className = 'correct-code';
+            el.appendChild(codeEl);
+          }
+          codeEl.textContent = `Correct code: ${JSON.stringify(answerKey[q-1])}`;
+        }
+        const points = Math.round((correctCount/41)*1000);
+        const result = document.getElementById('resultContainer');
+        result.innerHTML = `<h3>You scored ${points} points</h3><p>Your answer code:</p><pre>${JSON.stringify(userKey)}</pre>`;
+      });
+    });
+  </script>
+</body>
+</html>
